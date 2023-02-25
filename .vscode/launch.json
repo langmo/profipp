@@ -1,0 +1,34 @@
+{
+    "configurations": [
+        {
+            "name": "Debug profizumo",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/debug/examples/profizumo/profizumo",
+            "args": ["-s", "-e", "./"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/debug/examples/profizumo/",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            //"preLaunchTask": "C/C++: g++ build active file",
+            "preLaunchTask": "buildDebug",
+            //"miDebuggerPath": "/usr/bin/gdb",
+            "miDebuggerPath": "${workspaceFolder}/.vscode/sudo_debug.sh"
+
+        }
+    ],
+    "version": "2.0.0"
+}
