@@ -18,12 +18,12 @@ if (PNET_OPTION_SNMP)
   find_package(NetSNMPAgent REQUIRED)
 endif()
 
-target_include_directories(profinet
+target_include_directories(pnet
   PRIVATE
   src/ports/linux
   )
 
-target_sources(profinet
+target_sources(pnet
   PRIVATE
   src/ports/linux/pnal.c
   src/ports/linux/pnal_eth.c
@@ -43,7 +43,7 @@ target_sources(profinet
   $<$<BOOL:${PNET_OPTION_SNMP}>:src/ports/linux/mib/lldpXPnoRemTable.c>
   )
 
-target_compile_options(profinet
+target_compile_options(pnet
   PRIVATE
   -Wall
   -Wextra
@@ -55,7 +55,7 @@ target_compile_options(profinet
   $<$<CONFIG:Coverage>:--coverage>
   )
 
-target_link_libraries(profinet
+target_link_libraries(pnet
   PUBLIC
   $<$<BOOL:${PNET_OPTION_SNMP}>:NetSNMP::NetSNMPAgent>
   $<$<BOOL:${PNET_OPTION_SNMP}>:NetSNMP::NetSNMP>

@@ -7,7 +7,7 @@ add_executable(profizumo src/profizumo.cpp)
 target_include_directories(profizumo
   PRIVATE
   src
-  ${PROFINETPP_SOURCE_DIR}/include
+  ${PROFIPP_SOURCE_DIR}/include
   )
 
 target_sources(profizumo
@@ -21,8 +21,8 @@ file (COPY ${PROFIZUMO_BINARY_DIR}/tmp/set_network_parameters DESTINATION ${PROF
 file(REMOVE_RECURSE ${PROFIZUMO_BINARY_DIR}/tmp/)
 
 target_compile_features(profizumo PRIVATE cxx_std_17)
-target_link_libraries (profizumo PUBLIC profinet)
-target_link_libraries (profizumo PUBLIC profinetpp)
+target_link_libraries (profizumo PUBLIC pnet)
+target_link_libraries (profizumo PUBLIC profipp)
 
 install (TARGETS profizumo DESTINATION bin)
 

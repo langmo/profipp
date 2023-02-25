@@ -125,12 +125,6 @@ set(LOG_LEVEL_VALUES "DEBUG;INFO;WARNING;ERROR;FATAL")
 set(LOG_LEVEL DEBUG CACHE STRING "default log level")
 set_property(CACHE LOG_LEVEL PROPERTY STRINGS ${LOG_LEVEL_VALUES})
 
-# Generate version numbers
-#configure_file (
-#  pnet_version.h.in
-#  ${PNET_BINARY_DIR}/include/pnet_version.h
-#  )
-
 # Generate config options
 configure_file (
   options.h.in
@@ -177,3 +171,29 @@ target_include_directories(pnet
   )
 
 target_link_libraries(pnet PUBLIC osal)
+
+install (
+  TARGETS pnet
+  EXPORT ProfinetConfig
+  DESTINATION lib
+  )
+
+install(
+  EXPORT ProfinetConfig
+  DESTINATION cmake
+  )
+
+install (FILES
+  include/pnet_api.h
+  ${PNET_BINARY_DIR}/include/pnet_export.h
+  ${PNET_BINARY_DIR}/include/pnet_options.h
+  ${PNET_BINARY_DIR}/include/pnet_version.h
+  DESTINATION include
+  )
+
+add_subdirectory (src)
+
+include (InstallRequiredSystemLibraries)
+set (CPACK_RESOURCE_FILE_LICENSE "${PNET_SOURCE_DIR}/LICENSE.md")
+set (CPACK_PACKAGE_CONTACT info.profinet@rt-labs.com)
+include (CPack)
