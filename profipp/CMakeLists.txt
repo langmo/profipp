@@ -9,7 +9,7 @@ target_include_directories(profipp
   src
   src/pugixml
   include
-  ${PROFINET_SOURCE_DIR}/include
+  ${PNET_SOURCE_DIR}/include
   )
 
 target_sources(profipp

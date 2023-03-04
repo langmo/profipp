@@ -7,7 +7,7 @@ add_executable(profiecho src/profiecho.cpp)
 target_include_directories(profiecho
   PRIVATE
   src
-  ${PROFINETPP_SOURCE_DIR}/include
+  ${PROFIPP_SOURCE_DIR}/include
   )
 
 target_sources(profiecho
@@ -20,8 +20,8 @@ file (COPY ${PROFIECHO_BINARY_DIR}/tmp/set_network_parameters DESTINATION ${PROF
 file(REMOVE_RECURSE ${PROFIECHO_BINARY_DIR}/tmp/)
 
 target_compile_features(profiecho PRIVATE cxx_std_17)
-target_link_libraries (profiecho PUBLIC profinet)
-target_link_libraries (profiecho PUBLIC profinetpp)
+target_link_libraries (profiecho PUBLIC pnet)
+target_link_libraries (profiecho PUBLIC profipp)
 
 install (TARGETS profiecho DESTINATION bin)
 
