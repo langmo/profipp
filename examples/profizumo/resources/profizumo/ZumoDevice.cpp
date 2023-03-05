@@ -1,5 +1,5 @@
 //#include "Arduino.h"
-#include "ZumoController.h"
+#include "ZumoDevice.h"
 
 #include <Wire.h>
 #include <ZumoShield.h>
@@ -12,10 +12,10 @@ static ZumoMotors motors;
 // accelerometer, magnetometer, and gyro
 static ZumoIMU imu;
 
-ZumoController::ZumoController()
+ZumoDevice::ZumoDevice()
 {
 }
-void ZumoController::Init(void (*outputProcessor_)(ZumoOutput, int16_t))
+void ZumoDevice::Init(void (*outputProcessor_)(ZumoOutput, int16_t))
 {
   outputProcessor = outputProcessor_;
   if (!imu.init())
@@ -29,7 +29,7 @@ void ZumoController::Init(void (*outputProcessor_)(ZumoOutput, int16_t))
   }
   imu.enableDefault();
 }
-void ZumoController::ProcessInput(ZumoInput command, int16_t value)
+void ZumoDevice::ProcessInput(ZumoInput command, int16_t value)
 {
   switch(command)
   {
@@ -53,7 +53,7 @@ void ZumoController::ProcessInput(ZumoInput command, int16_t value)
       break;
   }
 }
-void ZumoController::Run()
+void ZumoDevice::Run()
 {
   motors.setLeftSpeed(leftSpeed);
   motors.setRightSpeed(rightSpeed);

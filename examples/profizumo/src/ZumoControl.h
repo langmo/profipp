@@ -5,6 +5,8 @@
 
 #include "Profinet.h"
 
+class SerialConnection;
+
 class ZumoControl final
 {
 public:
@@ -21,8 +23,13 @@ public:
 private:
     bool profinetInitialized{false};
     profinet::Profinet profinet;
-    uint32_t speedLeft;
+    int16_t speedLeft;
+    int16_t speedRight;
     std::unique_ptr<profinet::ProfinetControl> profinetInstance;
+
+    bool SendSerial(SerialConnection& serialConnection);
+    bool ReceiveSerial(SerialConnection& serialConnection);
+    bool InterpretCommand(profizumo::ZumoOutput command, int16_t value)
 };
 
 #endif

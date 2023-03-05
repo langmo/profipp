@@ -1,5 +1,5 @@
-#include "ZumoController.h"
-#include "zumoCommunication.h"
+#include "ZumoDevice.h"
+#include "zumocom.h"
 #include <stdint.h>
 
 // Constants
@@ -9,7 +9,7 @@
 void serialOutput(profizumo::ZumoOutput command, int value);
 
 // Global controller object.
-profizumo::ZumoController controller{};
+profizumo::ZumoDevice controller{};
 
 void setup()
 {
@@ -43,11 +43,6 @@ void serialEvent()
     }
     // get the command (one 8bit char)
     char command = (char)Serial.read();
-    if(!profizumo::IsZumoInput(command))
-    {
-      controller.ProcessInput(profizumo::ZumoInput::error, 0);
-      continue;
-    }
     
     // get the value (one 16bit int)
     // network endianess is big endian, Arduino uses little endian

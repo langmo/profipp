@@ -1,13 +1,13 @@
 #include "ZumoControl.h"
+#include "SerialConnection.h"
 #include "Device.h"
 #include "gsdmltools.h"
+#include "zumocom.h"
 #include <cstdint>
 #include <thread>
 #include <chrono>
 #include <iostream>
 #include <fstream>
-
-#include "SerialConnection.h"
 
 ZumoControl::ZumoControl() : profinet{}, speedLeft{0}
 {
@@ -59,12 +59,69 @@ bool ZumoControl::InitializeProfinet()
     auto& [plugInfo, module]{*moduleWithPlugInfo};
     profinet::Submodule* submodule = module.submodules.Create(0x00000140);
     
-    auto uint32SetCallback = [this](uint32_t value) -> void
+    // Inputs
+    auto leftSpeedSetCallback = [this](int16_t value) -> void
         {
             speedLeft = value;
         };
-    submodule->inputs.Create<uint32_t, sizeof(uint32_t)>(uint32SetCallback);
+    submodule->inputs.Create<int16_t, sizeof(int16_t)>(leftSpeedSetCallback);
+
+    auto rightSpeedSetCallback = [this](int16_t value) -> void
+        {
+            speedRight = value;
+        };
+    submodule->inputs.Create<int16_t, sizeof(int16_t)>(rightSpeedSetCallback);
     
+    //Outputs
+    //Acceleration
+    auto accelerationXGetCallback = [this]() -> int16_t
+        {
+            return accelerationX;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationXGetCallback);
+    auto accelerationYGetCallback = [this]() -> int16_t
+        {
+            return accelerationY;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationYGetCallback);
+    auto accelerationZGetCallback = [this]() -> int16_t
+        {
+            return accelerationZ;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationZGetCallback);
+    // Gyro 
+    auto gyroXGetCallback = [this]() -> int16_t
+        {
+            return gyroX;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroXGetCallback);
+    auto gyroYGetCallback = [this]() -> int16_t
+        {
+            return gyroY;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroYGetCallback);
+    auto gyroZGetCallback = [this]() -> int16_t
+        {
+            return gyroZ;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroZGetCallback);
+    // Magnetometer 
+    auto magnetometerXGetCallback = [this]() -> int16_t
+        {
+            return magnetometerX;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerXGetCallback);
+    auto magnetometerYGetCallback = [this]() -> int16_t
+        {
+            return magnetometerY;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerYGetCallback);
+    auto magnetometerZGetCallback = [this]() -> int16_t
+        {
+            return magnetometerZ;
+        };
+    submodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerZGetCallback);
+
     profinetInitialized = true;
     return true;
 }
@@ -86,17 +143,112 @@ void ZumoControl::RunController()
     {
         return;
     }
+   
     while(true)
     {
-        uint8_t buffer[10];
-        buffer[0] = static_cast<uint8_t>(speedLeft);
-        if(!serialConnection.Send(buffer, 1))
-        {
-            return;
-        }
-        // busy waiting...
+        SendSerial();
+        ReceiveSerial();
+
         using namespace std::chrono_literals;
         std::this_thread::sleep_for(100ms);
+    }
+}
+
+bool ZumoControl::SendSerial(SerialConnection& serialConnection)
+{
+    uint8_t buffer[4];
+    buffer[0] = profizumo::stopByte;
+    // Left motor
+    buffer[1] = profizumo::FromZumoInput(profizumo::ZumoInput::leftMotorSpeed);
+    toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedLeft);
+    if(!serialConnection.Send(buffer, 4))
+    {
+        return false;
+    }
+
+    // Right motor
+    buffer[1] = profizumo::FromZumoInput(profizumo::ZumoInput::rightMotorSpeed);
+    toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedRight);
+    if(!serialConnection.Send(buffer, 4))
+    {
+        return false;
+    }
+}
+bool ZumoControl::ReceiveSerial(SerialConnection& serialConnection)
+{
+    static uint8_t buffer[4];
+    static size_t bufferPos{0};
+    std::size_t numBytes
+    while(true)
+    {
+        serialConnection.Read(buffer+bufferPos, 1, &numBytes);
+        if(numBytes == 0)
+            break;
+        else if(bufferPos == 0 && buffer[0] != profizumo::stopByte)
+            continue;
+        bufferPos++;
+        if(bufferPos == 4)
+        {
+            int16_t val;
+            if(fromProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, &val))
+                InterpretCommand(profizumo.ToZumoOutput(buffer[1]), val);
+            else
+                InterpretCommand(profizumo::ZumoOutput::error, 0);
+            bufferPos=0;
+        }
+    }
+}
+void ZumoControl::RunController()
+{
+    SerialConnection serialConnection{};
+    if(!serialConnection.Connect())
+    {
+        return;
+    }
+   
+    while(true)
+    {
+        SendSerial(serialConnection);
+        ReceiveSerial(serialConnection);
+
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(100ms);
+    }
+}
+
+bool ZumoControl::InterpretCommand(profizumo::ZumoOutput command, int16_t value)
+{
+    switch(command)
+    {
+        case profizumo::ZumoOutput::accelerationX:
+            accelerationX = value;
+            return true;
+        case profizumo::ZumoOutput::accelerationY:
+            accelerationY = value;
+            return true;
+        case profizumo::ZumoOutput::accelerationZ:
+            accelerationZ = value;
+            return true;
+        case profizumo::ZumoOutput::gyroX:
+            gyroX = value;
+            return true;
+        case profizumo::ZumoOutput::gyroY:
+            gyroY = value;
+            return true;
+        case profizumo::ZumoOutput::gyroZ:
+            gyroZ = value;
+            return true;
+        case profizumo::ZumoOutput::magnetometerX:
+            magnetometerX = value;
+            return true;
+        case profizumo::ZumoOutput::magnetometerY:
+            magnetometerY = value;
+            return true;
+        case profizumo::ZumoOutput::magnetometerZ:
+            magnetometerZ = value;
+            return true;
+        default:
+            return false;
     }
 }
 

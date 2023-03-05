@@ -7,6 +7,7 @@ add_executable(profizumo src/profizumo.cpp)
 target_include_directories(profizumo
   PRIVATE
   src
+  resources/profizumo
   ${PROFIPP_SOURCE_DIR}/include
   )
 

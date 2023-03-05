@@ -2,15 +2,15 @@
 #define ZUMOCONTROLLER_H
 #pragma once
 
-#include "zumoCommunication.h"
+#include "zumocom.h"
 #include <stdint.h>
 
 namespace profizumo
 {
-class ZumoController
+class ZumoDevice
 {
 public:
-  ZumoController();
+  ZumoDevice();
   void ProcessInput(ZumoInput command, int16_t value);
   void Run();
   /**
@@ -19,8 +19,9 @@ public:
    */
   void Init(void (*outputProcessor)(ZumoOutput, int16_t));
 private:
-  int leftSpeed{0};
-  int rightSpeed{0};
+  //Outputs
+  int16_t leftSpeed{0};
+  int16_t rightSpeed{0};
   void (*outputProcessor)(ZumoOutput, int16_t) {nullptr};
 };
 }
