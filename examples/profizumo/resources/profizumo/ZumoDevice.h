@@ -1,5 +1,5 @@
-#ifndef ZUMOCONTROLLER_H
-#define ZUMOCONTROLLER_H
+#ifndef ZUMODEVICE_H
+#define ZUMODEVICE_H
 #pragma once
 
 #include "zumocom.h"

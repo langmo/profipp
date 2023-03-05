@@ -2,6 +2,7 @@
 #include "SerialConnection.h"
 #include "Device.h"
 #include "gsdmltools.h"
+#include "standardconversions.h"
 #include "zumocom.h"
 #include <cstdint>
 #include <thread>
@@ -136,31 +137,13 @@ bool ZumoControl::StartProfinet()
     return profinetInstance->Start();
 }
 
-void ZumoControl::RunController()
-{
-    SerialConnection serialConnection{};
-    if(!serialConnection.Connect())
-    {
-        return;
-    }
-   
-    while(true)
-    {
-        SendSerial();
-        ReceiveSerial();
-
-        using namespace std::chrono_literals;
-        std::this_thread::sleep_for(100ms);
-    }
-}
-
 bool ZumoControl::SendSerial(SerialConnection& serialConnection)
 {
     uint8_t buffer[4];
     buffer[0] = profizumo::stopByte;
     // Left motor
     buffer[1] = profizumo::FromZumoInput(profizumo::ZumoInput::leftMotorSpeed);
-    toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedLeft);
+    profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedLeft);
     if(!serialConnection.Send(buffer, 4))
     {
         return false;
@@ -168,21 +151,22 @@ bool ZumoControl::SendSerial(SerialConnection& serialConnection)
 
     // Right motor
     buffer[1] = profizumo::FromZumoInput(profizumo::ZumoInput::rightMotorSpeed);
-    toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedRight);
+    profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedRight);
     if(!serialConnection.Send(buffer, 4))
     {
         return false;
     }
+    return true;
 }
 bool ZumoControl::ReceiveSerial(SerialConnection& serialConnection)
 {
     static uint8_t buffer[4];
     static size_t bufferPos{0};
-    std::size_t numBytes
+    std::size_t numBytes{};
     while(true)
     {
         serialConnection.Read(buffer+bufferPos, 1, &numBytes);
-        if(numBytes == 0)
+        if(numBytes <= 0)
             break;
         else if(bufferPos == 0 && buffer[0] != profizumo::stopByte)
             continue;
@@ -190,13 +174,14 @@ bool ZumoControl::ReceiveSerial(SerialConnection& serialConnection)
         if(bufferPos == 4)
         {
             int16_t val;
-            if(fromProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, &val))
-                InterpretCommand(profizumo.ToZumoOutput(buffer[1]), val);
+            if(profinet::fromProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, &val))
+                InterpretCommand(profizumo::ToZumoOutput(buffer[1]), val);
             else
                 InterpretCommand(profizumo::ZumoOutput::error, 0);
             bufferPos=0;
         }
     }
+    return true;
 }
 void ZumoControl::RunController()
 {

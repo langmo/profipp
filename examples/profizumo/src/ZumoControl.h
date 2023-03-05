@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Profinet.h"
+#include "zumocom.h"
 
 class SerialConnection;
 
@@ -42,7 +43,7 @@ private:
 
     bool SendSerial(SerialConnection& serialConnection);
     bool ReceiveSerial(SerialConnection& serialConnection);
-    bool InterpretCommand(profizumo::ZumoOutput command, int16_t value)
+    bool InterpretCommand(profizumo::ZumoOutput command, int16_t value);
 };
 
 #endif
