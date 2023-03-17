@@ -1,4 +1,3 @@
-//#include "Arduino.h"
 #include "ZumoDevice.h"
 
 #include <Wire.h>
@@ -18,9 +17,12 @@ ZumoDevice::ZumoDevice()
 void ZumoDevice::Init(void (*outputProcessor_)(ZumoOutput, int16_t))
 {
   outputProcessor = outputProcessor_;
+  // Initialize the Wire library and join the I2C bus as a master
+  Wire.begin();
+  // Init IMU sensors.
   if (!imu.init())
   {
-    // Failed to detect the compass.
+    // If initialization failed, send error message in endless loop.
     while(1)
     {
       outputProcessor(profizumo::ZumoOutput::error, -1);
@@ -28,6 +30,7 @@ void ZumoDevice::Init(void (*outputProcessor_)(ZumoOutput, int16_t))
     }
   }
   imu.enableDefault();
+  
 }
 void ZumoDevice::ProcessInput(ZumoInput command, int16_t value)
 {

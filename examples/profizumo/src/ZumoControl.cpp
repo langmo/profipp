@@ -9,8 +9,9 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
+#include <cstdarg>
 
-ZumoControl::ZumoControl() : profinet{}, speedLeft{0}
+ZumoControl::ZumoControl() : profinet{}, speedLeft{0}, logger{profinet::logging::CreateConsoleLogger()}
 {
 
 }
@@ -19,6 +20,21 @@ ZumoControl::~ZumoControl()
 {
 
 }
+
+void ZumoControl::Log(profinet::LogLevel logLevel, const char* format, ...) noexcept
+{
+   if(!logger)
+      return;
+   va_list args;
+   std::string message;
+
+   va_start (args, format);
+   message.resize (vsnprintf (0, 0, format, args));
+   vsnprintf (&message[0], message.size () + 1, format, args);
+   va_end (args);
+   logger(logLevel, std::move(message));
+}
+
 bool ZumoControl::InitializeProfinet()
 {
     profinet::Device& device = profinet.GetDevice();
@@ -130,10 +146,16 @@ bool ZumoControl::InitializeProfinet()
 bool ZumoControl::StartProfinet()
 {
     if(!profinetInitialized)
+    {
+        Log(profinet::logError, "Profinet not yet initialized.");
         return false;
-    profinetInstance = profinet.Initialize();
+    }
+    profinetInstance = profinet.Initialize(logger);
     if(!profinetInstance)
+    {
+        Log(profinet::logError, "Could not initialize Profinet");
         return false;
+    }
     return profinetInstance->Start();
 }
 
@@ -188,6 +210,7 @@ void ZumoControl::RunController()
     SerialConnection serialConnection{};
     if(!serialConnection.Connect())
     {
+        Log(profinet::logError, "Could not establish serial connection.");
         return;
     }
    

@@ -22,6 +22,8 @@ public:
     bool ExportGDSML(const char* filename) const;
     void RunController();
 private:
+    profinet::LoggerType logger;
+    void Log(profinet::LogLevel logLevel, const char* format, ...) noexcept;    
     bool profinetInitialized{false};
     profinet::Profinet profinet;
     int16_t speedLeft;

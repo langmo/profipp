@@ -107,7 +107,7 @@ bool SerialConnection::Read(uint8_t* buffer, std::size_t maxBytes, std::size_t* 
     // Read bytes. The behaviour of read() (e.g. does it block?,
     // how long does it block for?) depends on the configuration
     // settings above, specifically VMIN and VTIME
-    ssize_t length = read(connection, buffer, sizeof(maxBytes));
+    ssize_t length = read(connection, buffer, maxBytes);
 
     // n is the number of bytes read. n may be 0 if no bytes were received, and can also be -1 to signal an error.
     if (length < 0)
