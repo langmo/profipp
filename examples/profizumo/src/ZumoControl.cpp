@@ -37,6 +37,7 @@ void ZumoControl::Log(profinet::LogLevel logLevel, const char* format, ...) noex
 
 bool ZumoControl::InitializeProfinet()
 {
+    profinet.GetProperties().mainNetworkInterface = "wlan0";
     profinet::Device& device = profinet.GetDevice();
 
     device.properties.vendorName = "FH Technikum Wien";
