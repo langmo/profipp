@@ -61,14 +61,17 @@ enum class ZumoOutput: char
   // Magnetometer 
   magnetometerX = 'm',
   magnetometerY = 'n',
-  magnetometerZ = 'o'
+  magnetometerZ = 'o',
+  // Ultrasound distance
+  ultrasoundDistance = 'u'
 }; 
 bool constexpr IsZumoOutput(char v)
 {
   using TestCheck = EnumCheck<ZumoOutput, ZumoOutput::error,
     ZumoOutput::accelerationX, ZumoOutput::accelerationY, ZumoOutput::accelerationZ,
     ZumoOutput::gyroX, ZumoOutput::gyroY, ZumoOutput::gyroZ, 
-    ZumoOutput::magnetometerX, ZumoOutput::magnetometerY , ZumoOutput::magnetometerZ>;
+    ZumoOutput::magnetometerX, ZumoOutput::magnetometerY , ZumoOutput::magnetometerZ,
+    ZumoOutput::ultrasoundDistance>;
   return TestCheck::IsValue(v);
 }
 ZumoOutput constexpr ToZumoOutput(char v)

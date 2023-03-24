@@ -2,14 +2,43 @@
 
 #include <Wire.h>
 #include <ZumoShield.h>
+#include <Arduino.h>
 
 #define MAX_SPEED 400
+#define ULTRASOUND_ECHO_PIN 4 // Echo Eingangs-Pin
+#define ULTRASOUND_TRIGGER_PIN 2 // Trigger Ausgangs-Pin
 
 namespace profizumo
 {
 static ZumoMotors motors;
 // accelerometer, magnetometer, and gyro
 static ZumoIMU imu;
+
+void InitUltrasound()
+{
+  pinMode(ULTRASOUND_TRIGGER_PIN, OUTPUT);
+  pinMode(ULTRASOUND_ECHO_PIN, INPUT);
+}
+int16_t GetUltrasoundDistance_mm()
+{
+  const int MAX_DISTANCE_MM = 3000;
+  const int MIN_DISTANCE_MM = 20;
+  // Abstandsmessung wird mittels des 10us langen Triggersignals gestartet
+  digitalWrite(ULTRASOUND_TRIGGER_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(ULTRASOUND_TRIGGER_PIN, LOW);
+  // Nun wird am Echo-Eingang gewartet, bis das Signal aktiviert wurde
+  // und danach die Zeit gemessen, wie lang es aktiviert bleibt
+  unsigned long duration_mus = pulseIn(ULTRASOUND_ECHO_PIN, HIGH);
+  // Nun wird der Abstand mittels der aufgenommenen Zeit berechnet
+  int16_t distance_mm = duration_mus/5.82;
+  // Überprüfung ob gemessener Wert innerhalb der zulässingen Entfernung liegt
+  if (distance_mm >= MAX_DISTANCE_MM || distance_mm <= MIN_DISTANCE_MM) 
+    return -1;
+  else
+    return distance_mm;
+  // Falls nicht wird eine Fehlermeldung ausgegeben.
+}
 
 ZumoDevice::ZumoDevice()
 {
@@ -30,7 +59,8 @@ void ZumoDevice::Init(void (*outputProcessor_)(ZumoOutput, int16_t))
     }
   }
   imu.enableDefault();
-  
+
+  InitUltrasound();
 }
 void ZumoDevice::ProcessInput(ZumoInput command, int16_t value)
 {
@@ -56,6 +86,9 @@ void ZumoDevice::ProcessInput(ZumoInput command, int16_t value)
       break;
   }
 }
+
+
+
 void ZumoDevice::Run()
 {
   motors.setLeftSpeed(leftSpeed);
@@ -76,6 +109,9 @@ void ZumoDevice::Run()
     outputProcessor(ZumoOutput::magnetometerX, imu.m.x);
     outputProcessor(ZumoOutput::magnetometerY, imu.m.y);
     outputProcessor(ZumoOutput::magnetometerZ, imu.m.z);
+    // Ultrasound distance
+    outputProcessor(ZumoOutput::ultrasoundDistance, GetUltrasoundDistance_mm());
+    
   }
 }
 }
