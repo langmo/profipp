@@ -422,6 +422,20 @@ int pnal_eth_get_status (const char * interface_name, pnal_eth_status_t * status
    ifr.ifr_data = (char *)&eth_status_linux;
    eth_status_linux.cmd = ETHTOOL_GSET;
 
+   if(strncmp("wlan", interface_name, strlen("wlan")) == 0)
+   {
+      // TODO: ETH tool seems to have problems detecting wifi interfaces. In case it's
+      // wifi, we just intermediately pretend it's a copper full duplex. Note that
+      // MAU type radio won't work, since this is considerend by p-net to be too slow...
+      // Nevertheless, wifi capabilities should be detected and not assumed in the long run.
+      speed = 100;
+      port_type = PORT_OTHER;
+      status->is_autonegotiation_enabled = true;
+      status->is_autonegotiation_supported = true;
+      status->operational_mau_type = PNAL_ETH_MAU_COPPER_100BaseTX_FULL_DUPLEX;
+      status->autonegotiation_advertised_capabilities = PNAL_ETH_AUTONEG_CAP_UNKNOWN;
+      ret = 0;
+   }
    if (ioctl (control_socket, SIOCETHTOOL, &ifr) >= 0)
    {
       speed = ethtool_cmd_speed (&eth_status_linux);

@@ -37,6 +37,7 @@ void ZumoControl::Log(profinet::LogLevel logLevel, const char* format, ...) noex
 
 bool ZumoControl::InitializeProfinet()
 {
+    profinet.GetProperties().mainNetworkInterface = "wlan0";
     profinet::Device& device = profinet.GetDevice();
 
     device.properties.vendorName = "FH Technikum Wien";
@@ -47,7 +48,7 @@ bool ZumoControl::InitializeProfinet()
     device.properties.deviceProductFamily = "robots";
     // profinet name
     device.properties.stationName = "profizumo";        
-    device.properties.numSlots = 1;
+    device.properties.numSlots = 3;
     
     // Current software version of device.
     device.properties.swRevMajor = 0;
@@ -70,74 +71,123 @@ bool ZumoControl::InitializeProfinet()
     device.properties.minDeviceInterval = 8*32; /* 8*1 ms */
     device.properties.defaultMautype = 0x10; /* Copper 100 Mbit/s Full duplex */
 
-    auto moduleWithPlugInfo = device.modules.Create(0x00000040, 1);
-    if(!moduleWithPlugInfo)
+    // Motor module
+    auto motorModuleWithPlugInfo = device.modules.Create(0x00000040, 1);
+    if(!motorModuleWithPlugInfo)
         return false;
-    auto& [plugInfo, module]{*moduleWithPlugInfo};
-    profinet::Submodule* submodule = module.submodules.Create(0x00000140);
-    
+    auto& [motorPlugInfo, motorModule]{*motorModuleWithPlugInfo};
+    motorModule.properties.name = "Motors";
+    motorModule.properties.infoText = "Moule allows control of the two motors of the Zumu bot.";
+    profinet::Submodule* motorSubmodule = motorModule.submodules.Create(0x00000140);
+    motorSubmodule->properties.name = "Motors submodule";
+    motorModule.properties.infoText = "Submoule allows control of the two motors of the Zumu bot.";
     // Inputs
     auto leftSpeedSetCallback = [this](int16_t value) -> void
         {
             speedLeft = value;
         };
-    submodule->inputs.Create<int16_t, sizeof(int16_t)>(leftSpeedSetCallback);
+    profinet::Input* left = motorSubmodule->inputs.Create<int16_t, sizeof(int16_t)>(leftSpeedSetCallback);
+    left->properties.description = "Speed of left motor.";
 
     auto rightSpeedSetCallback = [this](int16_t value) -> void
         {
             speedRight = value;
         };
-    submodule->inputs.Create<int16_t, sizeof(int16_t)>(rightSpeedSetCallback);
+    profinet::Input* right = motorSubmodule->inputs.Create<int16_t, sizeof(int16_t)>(rightSpeedSetCallback);
+    right->properties.description = "Speed of right motor.";
     
-    //Outputs
+    // IMU module
+    auto imuModuleWithPlugInfo = device.modules.Create(0x00000041, std::vector<uint16_t>{2});
+    if(!imuModuleWithPlugInfo)
+        return false;
+    auto& [imuPlugInfo, imuModule]{*imuModuleWithPlugInfo};
+    imuModule.properties.name = "IMU sensors";
+    imuModule.properties.infoText = "Moule allows reading of the different IMU sensors.";
     //Acceleration
+    profinet::Submodule* accelerationSubmodule = imuModule.submodules.Create(0x00000151);
+    accelerationSubmodule->properties.name = "Acceleration";
+    accelerationSubmodule->properties.infoText = "Acceleration sensor";
     auto accelerationXGetCallback = [this]() -> int16_t
         {
             return accelerationX;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationXGetCallback);
+    profinet::Output* output = accelerationSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationXGetCallback);
+    output->properties.description = "Acceleration in X direction";
     auto accelerationYGetCallback = [this]() -> int16_t
         {
             return accelerationY;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationYGetCallback);
+    output = accelerationSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationYGetCallback);
+    output->properties.description = "Acceleration in Y direction";
     auto accelerationZGetCallback = [this]() -> int16_t
         {
             return accelerationZ;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationZGetCallback);
+    output = accelerationSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(accelerationZGetCallback);
+    output->properties.description = "Acceleration in Z direction";
     // Gyro 
+    profinet::Submodule* gyroSubmodule = imuModule.submodules.Create(0x00000152);
+    gyroSubmodule->properties.name = "Gyro";
+    gyroSubmodule->properties.infoText = "Gyro sensor";
     auto gyroXGetCallback = [this]() -> int16_t
         {
             return gyroX;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroXGetCallback);
+    output = gyroSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroXGetCallback);
+    output->properties.description = "Gyro in X direction";
     auto gyroYGetCallback = [this]() -> int16_t
         {
             return gyroY;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroYGetCallback);
+    output = gyroSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroYGetCallback);
+    output->properties.description = "Gyro in Y direction";
     auto gyroZGetCallback = [this]() -> int16_t
         {
             return gyroZ;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroZGetCallback);
+    output = gyroSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(gyroZGetCallback);
+    output->properties.description = "Gyro in Z direction";
     // Magnetometer 
+    profinet::Submodule* magnetometerSubmodule = imuModule.submodules.Create(0x00000153);
+    magnetometerSubmodule->properties.name = "Magnetometer";
+    magnetometerSubmodule->properties.infoText = "Magnetormeter sensor";
     auto magnetometerXGetCallback = [this]() -> int16_t
         {
             return magnetometerX;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerXGetCallback);
+    output = magnetometerSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerXGetCallback);
+    output->properties.description = "Magnetometer in X direction";
     auto magnetometerYGetCallback = [this]() -> int16_t
         {
             return magnetometerY;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerYGetCallback);
+    output = magnetometerSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerYGetCallback);
+    output->properties.description = "Magnetometer in Y direction";
     auto magnetometerZGetCallback = [this]() -> int16_t
         {
             return magnetometerZ;
         };
-    submodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerZGetCallback);
+    output = magnetometerSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(magnetometerZGetCallback);
+    output->properties.description = "Magnetometer in Z direction";
+
+    // Ultrasound module
+    auto ultrasoundModuleWithPlugInfo = device.modules.Create(0x00000042, std::vector<uint16_t>{3});
+    if(!ultrasoundModuleWithPlugInfo)
+        return false;
+    auto& [ultrasoundPlugInfo, ultrasoundModule]{*ultrasoundModuleWithPlugInfo};
+    ultrasoundModule.properties.name = "Ultrasound distance sensor";
+    ultrasoundModule.properties.infoText = "Distances are measured in mm.";
+    profinet::Submodule* ultrasoundSubmodule = ultrasoundModule.submodules.Create(0x00000142);
+    ultrasoundSubmodule->properties.name = "Ultrasound distance sensor";
+    ultrasoundSubmodule->properties.infoText = "Distances are measured in mm.";
+    //Outputs
+    //distance in mm
+    auto distanceGetCallback = [this]() -> int16_t
+        {
+            return distance;
+        };
+    output = ultrasoundSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(distanceGetCallback);
+    output->properties.description = "Distance measured by ultrasound sensor in mm.";
 
     profinetInitialized = true;
     return true;
@@ -220,6 +270,7 @@ void ZumoControl::RunController()
         ReceiveSerial(serialConnection);
 
         using namespace std::chrono_literals;
+        // TODO: Check if we need to sleep at all.
         std::this_thread::sleep_for(100ms);
     }
 }
@@ -254,6 +305,9 @@ bool ZumoControl::InterpretCommand(profizumo::ZumoOutput command, int16_t value)
             return true;
         case profizumo::ZumoOutput::magnetometerZ:
             magnetometerZ = value;
+            return true;
+        case profizumo::ZumoOutput::ultrasoundDistance:
+            distance = value;
             return true;
         default:
             return false;

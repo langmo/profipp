@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <cstring>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -99,34 +100,60 @@ std::map<std::string, NetworkInterface> GetNetworkInterfaces() {
     struct ifreq* req = &ifc.ifc_req[i];
 
     // Get the IP address for the interface
-    if (ioctl(sock, SIOCGIFADDR, req) < 0) {
-      // Handle error
-      continue;
-    }
-    struct sockaddr_in* addr = (struct sockaddr_in*)&req->ifr_addr;
     char ip[INET_ADDRSTRLEN] = { 0 };
-    inet_ntop(AF_INET, &addr->sin_addr, ip, sizeof(ip));
-    uint32_t ipRaw = ntohl (addr->sin_addr.s_addr);
+    uint32_t ipRaw{};
+    if (ioctl(sock, SIOCGIFADDR, req) < 0) 
+    {
+      // Probably the network interface is not connected physically to any network.
+      // Set to 0.0.0.0. At least, thus, the user will notice that something with the connection is wrong...
+      std::strcpy(ip, "0.0.0.0");
+      ipRaw = 0;
+    }
+    else
+    {
+      struct sockaddr_in* addr = (struct sockaddr_in*)&req->ifr_addr;
+      inet_ntop(AF_INET, &addr->sin_addr, ip, sizeof(ip));
+      ipRaw = ntohl (addr->sin_addr.s_addr);
+    }
 
     // Get the subnet mask for the interface
-    if (ioctl(sock, SIOCGIFNETMASK, req) < 0) {
-      // Handle error
-      continue;
-    }
-    struct sockaddr_in* subnet_mask = (struct sockaddr_in*)&req->ifr_netmask;
     char mask[INET_ADDRSTRLEN] = { 0 };
-    inet_ntop(AF_INET, &subnet_mask->sin_addr, mask, sizeof(mask));
-    uint32_t maskRaw = ntohl (subnet_mask->sin_addr.s_addr);
+    uint32_t maskRaw{};
+    if (ioctl(sock, SIOCGIFNETMASK, req) < 0) 
+    {
+      // Set to 255.255.255.0. It's a good guess...
+      std::strcpy(mask, "255.255.255.0");
+      maskRaw = 4294967040;
+    }
+    else
+    {
+      struct sockaddr_in* subnet_mask = (struct sockaddr_in*)&req->ifr_netmask;
+      inet_ntop(AF_INET, &subnet_mask->sin_addr, mask, sizeof(mask));
+      maskRaw = ntohl (subnet_mask->sin_addr.s_addr);
+    }
 
     // Get the standard gateway for the interface
-    if (ioctl(sock, SIOCGIFDSTADDR, req) < 0) {
-      // Handle error
-      continue;
-    }
-    struct sockaddr_in* gatewayS = (struct sockaddr_in*)&req->ifr_dstaddr;
     char gateway[INET_ADDRSTRLEN] = { 0 };
-    inet_ntop(AF_INET, &gatewayS->sin_addr, gateway, sizeof(gateway));
-    uint32_t gatewayRaw = ntohl (gatewayS->sin_addr.s_addr);
+    uint32_t gatewayRaw{};
+    if (ioctl(sock, SIOCGIFDSTADDR, req) < 0) 
+    {
+      // Set to 0.0.0.0. This will lead to the gateway not being set (and thus the current gateway being kept).
+      std::strcpy(gateway, "0.0.0.0");
+      gatewayRaw = 0;
+    }
+    else
+    {
+      struct sockaddr_in* gatewayS = (struct sockaddr_in*)&req->ifr_dstaddr;
+      inet_ntop(AF_INET, &gatewayS->sin_addr, gateway, sizeof(gateway));
+      // Check if gateway same as ip. If so, set to 0.0.0.0
+      if(std::strcmp(ip, gateway) == 0)
+      {
+        std::strcpy(gateway, "0.0.0.0");
+        gatewayRaw = 0;
+      }
+      else
+        gatewayRaw = ntohl(gatewayS->sin_addr.s_addr);
+    }
 
     // Save the interface information in a struct
     NetworkInterface interface;

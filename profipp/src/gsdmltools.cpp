@@ -237,41 +237,48 @@ inline bool CreateDOM(const Profinet& profinet, pugi::xml_document& doc)
 
         // Virtual submodules
         auto virtualSubmoduleList{moduleItem.append_child("VirtualSubmoduleList")};
+        uint16_t subslot{0};
         for(auto& submodule : module.submodules)
         {
+            subslot++;
             auto virtualSubmoduleItem{virtualSubmoduleList.append_child("VirtualSubmoduleItem")};
             virtualSubmoduleItem.append_attribute("ID").set_value(str_printf("IDSM%u", submodule.GetId()).c_str());
             virtualSubmoduleItem.append_attribute("MayIssueProcessAlarm").set_value("true");
             virtualSubmoduleItem.append_attribute("SubmoduleIdentNumber").set_value(str_printf("%#.8x", submodule.GetId()).c_str());
+            virtualSubmoduleItem.append_attribute("FixedInSubslots").set_value(str_printf("%u", subslot).c_str());
+
             auto ioData{virtualSubmoduleItem.append_child("IOData")};
             
-            
-            //TODO: Only add Input child if there is at least one input
-            auto inputElem{ioData.append_child("Input")};
-            inputElem.append_attribute("Consistency").set_value("All items consistency");
-            // Note: Inputs and outputs are switched in their meanings in GSDML (perspective of the controller, not of the device)
-            unsigned int dataItemNo = 0;
-            for(auto& output : submodule.outputs)
+            if(!submodule.outputs.empty())
             {
-                dataItemNo++;
-                auto dataItem{inputElem.append_child("DataItem")};
-                dataItem.append_attribute("TextId").set_value(addText(str_printf("SUBMODULE%u_INPUT%u", submodule.GetId(), dataItemNo), output.properties.description));
-                //TODO: How to determine data types?
-                dataItem.append_attribute("DataType").set_value(output.properties.dataType.c_str());
+                auto inputElem{ioData.append_child("Input")};
+                inputElem.append_attribute("Consistency").set_value("All items consistency");
+                // Note: Inputs and outputs are switched in their meanings in GSDML (perspective of the controller, not of the device)
+                unsigned int dataItemNo = 0;
+                for(auto& output : submodule.outputs)
+                {
+                    dataItemNo++;
+                    auto dataItem{inputElem.append_child("DataItem")};
+                    dataItem.append_attribute("TextId").set_value(addText(str_printf("SUBMODULE%u_INPUT%u", submodule.GetId(), dataItemNo), output.properties.description));
+                    //TODO: How to determine data types?
+                    dataItem.append_attribute("DataType").set_value(output.properties.dataType.c_str());
+                }
             }
 
-            //TODO: Only add Output child if there is at least one output
-            auto outputElem{ioData.append_child("Output")};
-            outputElem.append_attribute("Consistency").set_value("All items consistency");
-            // Note: Inputs and outputs are switched in their meanings in GSDML (perspective of the controller, not of the device)
-            dataItemNo = 0;
-            for(auto& input : submodule.inputs)
+            if(!submodule.inputs.empty())
             {
-                dataItemNo++;
-                auto dataItem{outputElem.append_child("DataItem")};
-                dataItem.append_attribute("TextId").set_value(addText(str_printf("SUBMODULE%u_OUTPUT%u", submodule.GetId(), dataItemNo), input.properties.description));
-                //TODO: How to determine data types?
-                dataItem.append_attribute("DataType").set_value(input.properties.dataType.c_str());
+                auto outputElem{ioData.append_child("Output")};
+                outputElem.append_attribute("Consistency").set_value("All items consistency");
+                // Note: Inputs and outputs are switched in their meanings in GSDML (perspective of the controller, not of the device)
+                unsigned int dataItemNo = 0;
+                for(auto& input : submodule.inputs)
+                {
+                    dataItemNo++;
+                    auto dataItem{outputElem.append_child("DataItem")};
+                    dataItem.append_attribute("TextId").set_value(addText(str_printf("SUBMODULE%u_OUTPUT%u", submodule.GetId(), dataItemNo), input.properties.description));
+                    //TODO: How to determine data types?
+                    dataItem.append_attribute("DataType").set_value(input.properties.dataType.c_str());
+                }
             }
 
             auto recordDataList{virtualSubmoduleItem.append_child("RecordDataList")};

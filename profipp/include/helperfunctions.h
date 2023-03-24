@@ -289,6 +289,14 @@ public:
             return nullptr;
         return list[pos];
     }
+    size_t size() const noexcept
+    {
+        return list.size();
+    }
+    bool empty() const noexcept
+    {
+        return list.empty();
+    }
 protected:
     std::vector<V>  list{};
 };

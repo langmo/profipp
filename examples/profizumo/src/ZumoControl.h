@@ -28,6 +28,7 @@ private:
     profinet::Profinet profinet;
     int16_t speedLeft;
     int16_t speedRight;
+    
     // Inputs
     //Acceleration
     int16_t accelerationX{0};
@@ -41,6 +42,9 @@ private:
     int16_t magnetometerX{0};
     int16_t magnetometerY{0};
     int16_t magnetometerZ{0};
+    // ultrasound
+    int16_t distance{-1};
+
     std::unique_ptr<profinet::ProfinetControl> profinetInstance;
 
     bool SendSerial(SerialConnection& serialConnection);

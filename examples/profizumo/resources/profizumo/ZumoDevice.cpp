@@ -5,8 +5,8 @@
 #include <Arduino.h>
 
 #define MAX_SPEED 400
-#define ULTRASOUND_ECHO_PIN 4 // Echo Eingangs-Pin
-#define ULTRASOUND_TRIGGER_PIN 2 // Trigger Ausgangs-Pin
+#define ULTRASOUND_ECHO_PIN 4 // Echo pin of the ultrasound distance sensor
+#define ULTRASOUND_TRIGGER_PIN 2 // Trigger pin of the ultrasound distance sensor
 
 namespace profizumo
 {
