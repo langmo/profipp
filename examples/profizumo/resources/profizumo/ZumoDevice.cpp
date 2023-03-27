@@ -1,18 +1,18 @@
 #include "ZumoDevice.h"
 
 #include <Wire.h>
-#include <ZumoShield.h>
+#include <Zumo32U4.h>
 #include <Arduino.h>
 
 #define MAX_SPEED 400
 #define ULTRASOUND_ECHO_PIN 4 // Echo pin of the ultrasound distance sensor
-#define ULTRASOUND_TRIGGER_PIN 2 // Trigger pin of the ultrasound distance sensor
+#define ULTRASOUND_TRIGGER_PIN 12 // Trigger pin of the ultrasound distance sensor
 
 namespace profizumo
 {
-static ZumoMotors motors;
+static Zumo32U4Motors motors;
 // accelerometer, magnetometer, and gyro
-static ZumoIMU imu;
+static Zumo32U4IMU imu;
 
 void InitUltrasound()
 {

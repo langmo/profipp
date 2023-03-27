@@ -21,34 +21,55 @@ void setup()
   }
   controller.Init(&serialOutput);
 }
-
+void receiveSerial();
 void loop()
 {
   controller.Run();
+  receiveSerial();
 }
 
 /*
   Called whenever new data comes in the hardware serial RX. This
   routine is run between each time loop() runs.
 */
-void serialEvent() 
+void receiveSerial()//serialEvent() 
 {
-  while (Serial.available()>=4) 
-  {
-    // Each command must start with a STOP_BYTE
-    if(((byte)Serial.read()) != profizumo::stopByte)
+  static int step = 0;
+  static char command = 'e';
+  static int firstMessage = 0;
+  static int secondMessage = 0;
+
+  while(Serial.available()>=1)
+  { 
+    int val = Serial.read();
+    bool commandComplete = false;
+    switch(step)
     {
-      controller.ProcessInput(profizumo::ZumoInput::error, 0);
-      continue;
+      case 0:
+        command = (char)val;
+        step++;
+        break;
+      case 1:
+        firstMessage = val;
+        step++;
+        break;
+      case 2:
+        secondMessage = val;
+        commandComplete = true;
+        step++;
+        break;
+      default:
+        if(((byte)val) == profizumo::stopByte)
+          step=0;
+        break;
     }
-    // get the command (one 8bit char)
-    char command = (char)Serial.read();
-    
-    // get the value (one 16bit int)
-    // network endianess is big endian, Arduino uses little endian
-    int16_t value = (Serial.read() << 8) | Serial.read();
-    
-    controller.ProcessInput(profizumo::ToZumoInput(command), value);
+    if(commandComplete)
+    {
+      // get the value (one 16bit int)
+      // network endianess is big endian, Arduino uses little endian
+      int16_t value = (firstMessage << 8) | secondMessage;
+      controller.ProcessInput(profizumo::ToZumoInput(command), value);
+    }
   }
 }
 /**
@@ -56,9 +77,9 @@ void serialEvent()
  */
 void serialOutput(profizumo::ZumoOutput command, int16_t value)
 {
-  Serial.write(profizumo::stopByte);
   Serial.write(profizumo::FromZumoOutput(command));
   // Little endian to network/big endian conversion
   Serial.write((value >> 8 ) & 0xFF);
   Serial.write((value      ) & 0xFF);
+  Serial.write(profizumo::stopByte);
 }

@@ -11,7 +11,7 @@
 #include <fstream>
 #include <cstdarg>
 
-ZumoControl::ZumoControl() : profinet{}, speedLeft{0}, logger{profinet::logging::CreateConsoleLogger()}
+ZumoControl::ZumoControl() : profinet{}, speedLeft{0}, speedRight{0}, logger{profinet::logging::CreateConsoleLogger()}
 {
 
 }
@@ -212,18 +212,18 @@ bool ZumoControl::StartProfinet()
 bool ZumoControl::SendSerial(SerialConnection& serialConnection)
 {
     uint8_t buffer[4];
-    buffer[0] = profizumo::stopByte;
     // Left motor
-    buffer[1] = profizumo::FromZumoInput(profizumo::ZumoInput::leftMotorSpeed);
-    profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedLeft);
+    buffer[0] = profizumo::FromZumoInput(profizumo::ZumoInput::leftMotorSpeed);
+    profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+1, 2, speedLeft);
+    buffer[3] = profizumo::stopByte;
     if(!serialConnection.Send(buffer, 4))
     {
         return false;
     }
 
     // Right motor
-    buffer[1] = profizumo::FromZumoInput(profizumo::ZumoInput::rightMotorSpeed);
-    profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+2, 2, speedRight);
+    buffer[0] = profizumo::FromZumoInput(profizumo::ZumoInput::rightMotorSpeed);
+    profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+1, 2, speedRight);
     if(!serialConnection.Send(buffer, 4))
     {
         return false;
