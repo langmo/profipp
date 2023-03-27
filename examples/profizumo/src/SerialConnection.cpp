@@ -48,7 +48,7 @@ bool SerialConnection::Connect(std::string serialPort)
     tty.c_cflag &= ~CRTSCTS;       // Disable RTS/CTS hardware flow control (most common)
     tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
 
-    tty.c_lflag &= ~ICANON;
+    tty.c_lflag &= ~ICANON;                                                      // Disable canonical mode (=processing data only upon newline)
     tty.c_lflag &= ~ECHO;                                                        // Disable echo
     tty.c_lflag &= ~ECHOE;                                                       // Disable erasure
     tty.c_lflag &= ~ECHONL;                                                      // Disable new-line echo
@@ -61,7 +61,7 @@ bool SerialConnection::Connect(std::string serialPort)
     // tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
     // tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
 
-    tty.c_cc[VTIME] = 10; // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+    tty.c_cc[VTIME] = 0; // (deciseconds), return immediately if no data is available.
     tty.c_cc[VMIN] = 0;
 
     // Set in/out baud rate to be 9600
@@ -100,6 +100,7 @@ bool SerialConnection::Send(const uint8_t* buffer, std::size_t numBytes)
         printf("Error writing: %s", strerror(errno));
         return false;
     }
+    fsync(connection);
     return true;
 }
 bool SerialConnection::Read(uint8_t* buffer, std::size_t maxBytes, std::size_t* numBytes)

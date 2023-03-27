@@ -4,7 +4,7 @@
 
 namespace profizumo
 {
-  constexpr char stopByte{127};
+  constexpr char stopByte{'\n'};
 template<typename EnumType, EnumType... Values> class EnumCheck;
 
 template<typename EnumType> class EnumCheck<EnumType>
