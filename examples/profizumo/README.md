@@ -11,10 +11,14 @@ Needed:
 Steps:
 - Install profi++
 - Install the Arduino IDE on the Raspberry: https://www.arduino.cc
-- In the Arduino IDE, install the board driver of the 32U:
+- In the Arduino IDE, install the board driver of the 32U4:
   - Open File->Preferences. Enter https://files.pololu.com/arduino/package_pololu_index.json in the "Additional Board Manager URLs" text box. Press OK.
   - In Tools->Boards->Boards Manager, search and install "Pololu A-Star Boards"
   - In Tools->Board, select "Pololu A-Star 32U4"
+- In the Arduino IDE, install the library of the 32U4:
+  - Select Sketch->Include library->Manage Libraries
+  - Search and "Zumo32U4"
+  - If you are asked to install missing dependencies: install them all!
 - In the Arduino IDE, upload the Arduino program (~/profipp/examples/profizumo/resources/profizumo/
 - Compile profizumo
 - Generate the GSDML file:
