@@ -10,6 +10,10 @@
 #include <iostream>
 #include <fstream>
 #include <cstdarg>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <unistd.h>
 
 ZumoControl::ZumoControl() : profinet{}, speedLeft{0}, speedRight{0}, logger{profinet::logging::CreateConsoleLogger()}
 {
@@ -193,6 +197,24 @@ bool ZumoControl::InitializeProfinet()
     return true;
 }
 
+bool ZumoControl::IsInterfaceOnline(std::string interface)
+{
+    struct ifreq ifr;
+    int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+    if (sock < 0)
+   {
+      return false;
+   }
+    memset(&ifr, 0, sizeof(ifr));
+    strcpy(ifr.ifr_name, interface.c_str());
+    if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) 
+    {
+            return false;
+    }
+    close(sock);
+    return (ifr.ifr_flags & IFF_UP) && (ifr.ifr_flags & IFF_RUNNING);
+}
+
 bool ZumoControl::StartProfinet()
 {
     if(!profinetInitialized)
@@ -200,10 +222,15 @@ bool ZumoControl::StartProfinet()
         Log(profinet::logError, "Profinet not yet initialized.");
         return false;
     }
+    while(!IsInterfaceOnline(profinet.GetProperties().mainNetworkInterface))
+    {
+        Log(profinet::logWarning, "Network interface %s not yet running. Retrying in 5s...", profinet.GetProperties().mainNetworkInterface.c_str());
+        std::this_thread::sleep_for (std::chrono::seconds(5));
+    }
     profinetInstance = profinet.Initialize(logger);
     if(!profinetInstance)
     {
-        Log(profinet::logError, "Could not initialize Profinet");
+        Log(profinet::logError, "Could not initialize Profinet.");
         return false;
     }
     return profinetInstance->Start();
@@ -258,12 +285,11 @@ bool ZumoControl::ReceiveSerial(SerialConnection& serialConnection)
 void ZumoControl::RunController()
 {
     SerialConnection serialConnection{};
-    if(!serialConnection.Connect())
+    while(!serialConnection.Connect())
     {
-        Log(profinet::logError, "Could not establish serial connection.");
-        return;
+        Log(profinet::logError, "Could not establish serial connection. Retrying in 5s...");
+        std::this_thread::sleep_for (std::chrono::seconds(5));
     }
-   
     while(true)
     {
         SendSerial(serialConnection);
@@ -271,7 +297,7 @@ void ZumoControl::RunController()
 
         using namespace std::chrono_literals;
         // TODO: Check if we need to sleep at all.
-        std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(50ms);
     }
 }
 
