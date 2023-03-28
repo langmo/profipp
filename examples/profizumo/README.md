@@ -49,7 +49,7 @@ Steps:
     ```
 	[Unit]
 	Description=profizumo
-	After=multi-user.target
+	After=network-online.target
 	
 	[Service]
 	Type=idle
@@ -59,7 +59,7 @@ Steps:
 	ExecStart=/usr/bin/sudo /home/username/profipp/scripts/start_profizumo.sh
 	
 	[Install]
-	WantedBy=multi-user.target
+	WantedBy=network-online.target
 	```
   - Change access permissions: ``sudo chmod 644 /lib/systemd/system/profizumo.service`` and ``sudo chmod 644 //home/username/profipp/scripts/start_profizumo.sh``
   - Tell systemd to run this service:
