@@ -26,6 +26,7 @@ target_link_libraries (profizumo PUBLIC pnet)
 target_link_libraries (profizumo PUBLIC profipp)
 
 install (TARGETS profizumo DESTINATION bin)
+install(FILES ${PROFIZUMO_BINARY_DIR}/set_network_parameters DESTINATION bin)
 
 include (InstallRequiredSystemLibraries)
 set (CPACK_RESOURCE_FILE_LICENSE "${PROFIZUMO_SOURCE_DIR}/LICENSE")

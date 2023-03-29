@@ -187,7 +187,7 @@ install (FILES
   include/pnet_api.h
   ${PNET_BINARY_DIR}/include/pnet_export.h
   ${PNET_BINARY_DIR}/include/pnet_options.h
-  ${PNET_BINARY_DIR}/include/pnet_version.h
+  #${PNET_BINARY_DIR}/include/pnet_version.h
   DESTINATION include
   )
 

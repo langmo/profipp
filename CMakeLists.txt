@@ -14,10 +14,10 @@ if (CMAKE_PROJECT_NAME STREQUAL PROFIPP)
   endif (NOT CMAKE_BUILD_TYPE)
 
   # Default to installing in build directory
-  if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX ${PROFIPP_BINARY_DIR}/install
-      CACHE PATH "Default install path" FORCE)
-  endif()
+  #if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  #  set(CMAKE_INSTALL_PREFIX ${PROFIPP_BINARY_DIR}/install
+  #    CACHE PATH "Default install path" FORCE)
+  #endif()
 
   message(STATUS "Current build type is: ${CMAKE_BUILD_TYPE}")
   message(STATUS "Current install path is: ${CMAKE_INSTALL_PREFIX}")
