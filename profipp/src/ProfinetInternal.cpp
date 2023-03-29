@@ -17,8 +17,8 @@
 #include <cstdarg>
 #include <cstdio>
 
-
 inline constexpr static uint32_t arepNull{UINT32_MAX};
+inline constexpr static bool monitorCycleTimes{false};
 
 namespace profinet
 {
@@ -501,6 +501,21 @@ void ProfinetInternal::loop()
       }
       else if(synchronizationEvents.ProcessCycle())
       {
+         if constexpr (monitorCycleTimes)
+         {
+            constexpr int NUM_COUNT = 100;
+            static auto lastTime{std::chrono::steady_clock::now()};
+            static int count = NUM_COUNT;
+            if(count <= 0)
+            {
+               auto time = std::chrono::steady_clock::now();
+               std::chrono::duration<double, std::milli> duration = time-lastTime; 
+               Log(logInfo, "Average cycle time during last %u cylcles: %fms", NUM_COUNT, duration.count()/NUM_COUNT);
+               lastTime = time;
+               count = NUM_COUNT;
+            }
+            count--;
+         }
          if(IsConnectedToController())
          {
             HandleCyclicData();
