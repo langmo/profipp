@@ -64,6 +64,6 @@ target_link_libraries(pnet
   )
 
 install (FILES
-  src/ports/linux/pnal_config.h
+  include/pnal_config.h
   DESTINATION include
   )

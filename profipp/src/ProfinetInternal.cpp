@@ -17,8 +17,8 @@
 #include <cstdarg>
 #include <cstdio>
 
-
 inline constexpr static uint32_t arepNull{UINT32_MAX};
+inline constexpr static bool monitorCycleTimes{false};
 
 namespace profinet
 {
@@ -315,7 +315,7 @@ void ProfinetInternal::HandleCyclicData ()
 
             if(ret != 0)
             {
-               Log(logDebug,
+               Log(logError,
                   "Error getting input data for slot %u subslot %u. Setting inputs to defaults...",
                   slot,
                   subslot);
@@ -412,7 +412,7 @@ void ProfinetInternal::HandleCyclicData ()
             {
                if(submodule.GetLastOutputIocs() != PNET_IOXS_BAD)
                {
-                  Log(logWarning, "Could not get consumer status of controller for output for slot %u subslot %u. Assuming IOCS BAD.",
+                  Log(logError, "Could not get consumer status of controller for output for slot %u subslot %u. Assuming IOCS BAD.",
                      slot,
                      subslot);
                   submodule.SetLastOutputIocs(PNET_IOXS_BAD);
@@ -501,6 +501,21 @@ void ProfinetInternal::loop()
       }
       else if(synchronizationEvents.ProcessCycle())
       {
+         if constexpr (monitorCycleTimes)
+         {
+            constexpr int NUM_COUNT = 100;
+            static auto lastTime{std::chrono::steady_clock::now()};
+            static int count = NUM_COUNT;
+            if(count <= 0)
+            {
+               auto time = std::chrono::steady_clock::now();
+               std::chrono::duration<double, std::milli> duration = time-lastTime; 
+               Log(logInfo, "Average cycle time during last %u cylcles: %fms", NUM_COUNT, duration.count()/NUM_COUNT);
+               lastTime = time;
+               count = NUM_COUNT;
+            }
+            count--;
+         }
          if(IsConnectedToController())
          {
             HandleCyclicData();
@@ -532,14 +547,15 @@ bool ProfinetInternal::Start()
   // TODO: Ever stop this timer?
   std::thread timer([this]()
    {
-      auto lastTime{std::chrono::steady_clock::now()};
+      //auto lastTime{std::chrono::steady_clock::now()};
       const auto period{std::chrono::microseconds{configuration.GetProperties().cycleTimeUs}};
 
       while(true)
       {
          this->synchronizationEvents.SignalCycle();
-         lastTime += period;
-         std::this_thread::sleep_until(lastTime);
+         //lastTime += period;
+         //std::this_thread::sleep_until(lastTime);
+         std::this_thread::sleep_for(period);
       }
    });
    sched_param timerScheduleParameters;

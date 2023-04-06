@@ -50,6 +50,8 @@ private:
     bool SendSerial(SerialConnection& serialConnection);
     bool ReceiveSerial(SerialConnection& serialConnection);
     bool InterpretCommand(profizumo::ZumoOutput command, int16_t value);
+
+    static bool IsInterfaceOnline(std::string interface);
 };
 
 #endif
