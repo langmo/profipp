@@ -21,6 +21,7 @@
 #include "ProfizumoDevice.h"
 #include "ProfizumoMotors.h"
 #include "ProfizumoImu.h"
+#include "ProfizumoEncoders.h"
 
 #include <Arduino.h>
 
@@ -32,12 +33,23 @@ static ProfizumoMotors motors{};
 // accelerometer, magnetometer, and gyro
 static ProfizumoImu imu{};
 static ProfizumoSupersonic superSonic{};
+static ProfizumoEncoders encoders{};
 }
 
+/**
+ * Interrupt handlers
+ */
 ISR(PCINT0_vect)
 {
   profizumo::superSonic.OnInterrupt();
+  profizumo::encoders.OnLeftInterrupt();
 }
+// interrupt pin 7
+static void interrupt4()
+{
+  profizumo::encoders.OnRightInterrupt();
+}
+
 
 namespace profizumo
 {
@@ -62,19 +74,22 @@ void ProfizumoDevice::Init(void (*outputProcessor_)(ZumoOutput, int16_t))
 
   superSonic.Init();
   motors.Init();
+  encoders.Init();
+
+  attachInterrupt(4, interrupt4, CHANGE);
 }
 void ProfizumoDevice::ProcessInput(ZumoInput command, int16_t value)
 {
   switch(command)
   {
-    case ZumoInput::leftMotorSpeed:
+    case ZumoInput::leftMotorSetSpeed:
       leftSpeed = value;
       if(leftSpeed > MAX_SPEED)
         leftSpeed = MAX_SPEED;
       else if(leftSpeed < -MAX_SPEED)
         leftSpeed = -MAX_SPEED;
       break;
-    case ZumoInput::rightMotorSpeed:
+    case ZumoInput::rightMotorSetSpeed:
       rightSpeed = value;
       if(rightSpeed > MAX_SPEED)
         rightSpeed = MAX_SPEED;
@@ -114,7 +129,9 @@ void ProfizumoDevice::Run()
     outputProcessor(ZumoOutput::magnetometerZ, imu.m.z);
     // Ultrasound distance
     outputProcessor(ZumoOutput::ultrasoundDistance, superSonic.GetLastDistance_mm());
-    
+    // encoders
+    outputProcessor(ZumoOutput::leftMotorIsSpeed, encoders.GetCountsLeft());
+    outputProcessor(ZumoOutput::rightMotorIsSpeed, encoders.GetCountsRight());
   }
 }
 }

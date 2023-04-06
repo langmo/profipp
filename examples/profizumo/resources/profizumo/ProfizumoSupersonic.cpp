@@ -42,7 +42,7 @@ void ProfizumoSupersonic::Init()
   PCMSK0 |= (1 << PCINT7);
   // set global interrupt enable bits (I) in the status register (SREG), such that
   // interrupts are enabled again
-  SREG |= 0x80;
+  sei();
 }
 
 void ProfizumoSupersonic::OnInterrupt()
@@ -80,9 +80,13 @@ void ProfizumoSupersonic::Run()
 }
 int16_t ProfizumoSupersonic::GetLastDistance_mm()
 {
-  if(echoDuration_us<=0)
+  cli();
+  long duration = echoDuration_us;
+  sei();
+  
+  if(duration<=0)
     return -1;
-  int16_t distance_mm = echoDuration_us/5.82;
+  int16_t distance_mm = duration/5.82;
   // Überprüfung ob gemessener Wert innerhalb der zulässingen Entfernung liegt
   if (distance_mm >= maxDistance_mm || distance_mm <= minDistance_mm) 
     return -1;
