@@ -84,8 +84,10 @@ enum class ZumoOutput: char
   // Ultrasound distance
   ultrasoundDistance = 'u',
   // Encoder
-  leftMotorIsSpeed = 'l',
-  rightMotorIsSpeed = 'r'
+  leftEncoderCounts = 'l',
+  rightEncoderCounts = 'r',
+  leftEncoderCountsPerSecond = 's',
+  rightEncoderCountsPerSecond = 't'
 }; 
 bool constexpr IsZumoOutput(char v)
 {
@@ -94,7 +96,8 @@ bool constexpr IsZumoOutput(char v)
     ZumoOutput::gyroX, ZumoOutput::gyroY, ZumoOutput::gyroZ, 
     ZumoOutput::magnetometerX, ZumoOutput::magnetometerY , ZumoOutput::magnetometerZ,
     ZumoOutput::ultrasoundDistance,
-    ZumoOutput::leftMotorIsSpeed, ZumoOutput::rightMotorIsSpeed>;
+    ZumoOutput::leftEncoderCounts, ZumoOutput::rightEncoderCounts,
+    ZumoOutput::leftEncoderCountsPerSecond, ZumoOutput::rightEncoderCountsPerSecond>;
   return TestCheck::IsValue(v);
 }
 ZumoOutput constexpr ToZumoOutput(char v)

@@ -111,36 +111,48 @@ void ProfizumoEncoders::Init()
 
 int16_t ProfizumoEncoders::GetCountsLeft()
 {
-    cli();
-    int16_t counts = countLeft;
-    sei();
-    return counts;
+    return totalCountsLeft;
 }
 
 int16_t ProfizumoEncoders::GetCountsRight()
 {
-    cli();
-    int16_t counts = countRight;
-    sei();
-    return counts;
+    return totalCountsRight;
 }
 
-int16_t ProfizumoEncoders::GetCountsAndResetLeft()
+int16_t ProfizumoEncoders::GetCountsPerSecondLeft()
 {
-    cli();
-    int16_t counts = countLeft;
-    countLeft = 0;
-    sei();
-    return counts;
+    return countsPerSecondLeft;
 }
 
-int16_t ProfizumoEncoders::GetCountsAndResetRight()
+int16_t ProfizumoEncoders::GetCountsPerSecondRight()
 {
-    cli();
-    int16_t counts = countRight;
-    countRight = 0;
-    sei();
-    return counts;
+    return countsPerSecondRight;
+}
+void ProfizumoEncoders::Run()
+{
+  long time_us = micros();
+  // Make local copies of counts while interrupts are disabled
+  cli();
+  int16_t deltaCountsRight = countRight;
+  countRight = 0;
+  int16_t deltaCountsLeft = countLeft;
+  countLeft = 0;
+  sei();
+  
+  totalCountsRight += deltaCountsRight;
+  totalCountsLeft += deltaCountsLeft;
+  if(lastRun_us == 0)
+  {
+    countsPerSecondRight = 0;
+    countsPerSecondLeft = 0;
+  }
+  else
+  {
+    double timeFactor = 1000000.0 / (time_us-lastRun_us);
+    countsPerSecondRight = deltaCountsRight*timeFactor;
+    countsPerSecondLeft = deltaCountsLeft*timeFactor;
+  }
+  lastRun_us = time_us;
 }
 
 bool ProfizumoEncoders::CheckErrorLeft()

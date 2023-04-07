@@ -61,14 +61,9 @@ public:
      *  right-side encoder. */
     int16_t GetCountsRight();
 
-    /*! This function is just like getCountsLeft() except it also clears the
-     *  counts before returning.  If you call this frequently enough, you will
-     *  not have to worry about the count overflowing. */
-    int16_t GetCountsAndResetLeft();
-
-    /*! This function is just like getCountsAndResetLeft() except it applies to
-     *  the right-side encoder. */
-    int16_t GetCountsAndResetRight();
+    int16_t GetCountsPerSecondLeft();
+    int16_t GetCountsPerSecondRight();
+    void Run();
 
     /*! This function returns true if an error was detected on the left-side
      * encoder.  It resets the error flag automatically, so it will only return
@@ -108,6 +103,12 @@ private:
     // signed integer overflow is undefined behavior in C++.
     volatile uint16_t countLeft;
     volatile uint16_t countRight;
+
+    int16_t totalCountsLeft{0};
+    int16_t totalCountsRight{0};
+    int16_t countsPerSecondLeft{0};
+    int16_t countsPerSecondRight{0};
+    long lastRun_us{0};
 };
 }
 #endif

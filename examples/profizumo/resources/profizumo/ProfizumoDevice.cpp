@@ -111,6 +111,7 @@ void ProfizumoDevice::Run()
   motors.SetRightSpeed(rightSpeed);
 
   superSonic.Run();
+  encoders.Run();
 
   if(outputProcessor != nullptr)
   {
@@ -130,8 +131,10 @@ void ProfizumoDevice::Run()
     // Ultrasound distance
     outputProcessor(ZumoOutput::ultrasoundDistance, superSonic.GetLastDistance_mm());
     // encoders
-    outputProcessor(ZumoOutput::leftMotorIsSpeed, encoders.GetCountsLeft());
-    outputProcessor(ZumoOutput::rightMotorIsSpeed, encoders.GetCountsRight());
+    outputProcessor(ZumoOutput::leftEncoderCounts, encoders.GetCountsLeft());
+    outputProcessor(ZumoOutput::rightEncoderCounts, encoders.GetCountsRight());
+    outputProcessor(ZumoOutput::leftEncoderCountsPerSecond, encoders.GetCountsPerSecondLeft());
+    outputProcessor(ZumoOutput::rightEncoderCountsPerSecond, encoders.GetCountsPerSecondRight());
   }
 }
 }
