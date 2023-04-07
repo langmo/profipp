@@ -26,8 +26,10 @@ private:
     void Log(profinet::LogLevel logLevel, const char* format, ...) noexcept;    
     bool profinetInitialized{false};
     profinet::Profinet profinet;
-    int16_t speedLeft;
-    int16_t speedRight;
+    
+    //Outputs
+    int16_t speedLeft{0};
+    int16_t speedRight{0};
     
     // Inputs
     //Acceleration
@@ -44,6 +46,16 @@ private:
     int16_t magnetometerZ{0};
     // ultrasound
     int16_t distance{-1};
+    // encoder
+    int16_t leftEncoderCounts{0};
+    int16_t rightEncoderCounts{0};
+    int16_t leftEncoderCountsPerSecond{0};
+    int16_t rightEncoderCountsPerSecond{0};
+
+    // Parameters
+    // encoder
+    uint16_t countsPerRotation{910};
+    uint16_t wheelRadius_mm{19};
 
     std::unique_ptr<profinet::ProfinetControl> profinetInstance;
 

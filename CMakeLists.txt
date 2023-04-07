@@ -28,6 +28,13 @@ endif()
 set(CMAKE_C_OUTPUT_EXTENSION_REPLACE 1)
 set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 
+# Change default options for pnet
+set(PNET_MAX_SLOTS            20
+  CACHE STRING "Per API. Should be > 1 to allow at least one I/O module")
+set(PNET_MAX_SUBSLOTS         10
+  CACHE STRING "Per slot (DAP requires 2 + PNET_MAX_PHYSICAL_PORTS)")
+  set(LOG_LEVEL ERROR CACHE STRING "default log level")
+
 add_subdirectory (osal)
 add_subdirectory (pnet)
 add_subdirectory (profipp)

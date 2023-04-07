@@ -16,7 +16,7 @@
 #include <arpa/inet.h> // inet_ntop
 #include <unistd.h>
 
-ZumoControl::ZumoControl() : profinet{}, speedLeft{0}, speedRight{0}, logger{profinet::logging::CreateConsoleLogger()}
+ZumoControl::ZumoControl() : profinet{}, speedLeft{0}, speedRight{0}, logger{profinet::logging::CreateConsoleLogger<profinet::LogLevel::logInfo>()}
 {
 
 }
@@ -53,7 +53,7 @@ bool ZumoControl::InitializeProfinet()
     device.properties.deviceProductFamily = "robots";
     // profinet name
     device.properties.stationName = "profizumo";        
-    device.properties.numSlots = 3;
+    device.properties.numSlots = 4;
     
     // Current software version of device.
     device.properties.swRevMajor = 0;
@@ -73,8 +73,8 @@ bool ZumoControl::InitializeProfinet()
     device.properties.productName = "Profizumo Robot";
 
     /* GSDML tag: MinDeviceInterval */
-    profinet.GetProperties().cycleTimeUs=32000;
-    device.properties.minDeviceInterval = 32*32; /* 32*1 ms */
+    profinet.GetProperties().cycleTimeUs=16000;
+    device.properties.minDeviceInterval = 16*32; /* 32*1 ms */
     device.properties.defaultMautype = 0x10; /* Copper 100 Mbit/s Full duplex */
 
     // Motor module
@@ -103,7 +103,7 @@ bool ZumoControl::InitializeProfinet()
     right->properties.description = "Speed of right motor.";
     
     // IMU module
-    auto imuModuleWithPlugInfo = device.modules.Create(0x00000041, std::vector<uint16_t>{2});
+    auto imuModuleWithPlugInfo = device.modules.Create(0x00000041, std::vector<uint16_t>{2,3,4});
     if(!imuModuleWithPlugInfo)
         return false;
     auto& [imuPlugInfo, imuModule]{*imuModuleWithPlugInfo};
@@ -177,7 +177,7 @@ bool ZumoControl::InitializeProfinet()
     output->properties.description = "Magnetometer in Z direction";
 
     // Ultrasound module
-    auto ultrasoundModuleWithPlugInfo = device.modules.Create(0x00000042, std::vector<uint16_t>{3});
+    auto ultrasoundModuleWithPlugInfo = device.modules.Create(0x00000042, std::vector<uint16_t>{2,3,4});
     if(!ultrasoundModuleWithPlugInfo)
         return false;
     auto& [ultrasoundPlugInfo, ultrasoundModule]{*ultrasoundModuleWithPlugInfo};
@@ -195,27 +195,82 @@ bool ZumoControl::InitializeProfinet()
     output = ultrasoundSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(distanceGetCallback);
     output->properties.description = "Distance measured by ultrasound sensor in mm.";
 
+    // Encoder module
+    auto encoderModuleWithPlugInfo = device.modules.Create(0x00000043, std::vector<uint16_t>{2,3,4});
+    if(!encoderModuleWithPlugInfo)
+        return false;
+    auto& [encoderPlugInfo, encoderModule]{*encoderModuleWithPlugInfo};
+    encoderModule.properties.name = "Encoder";
+    encoderModule.properties.infoText = "Encoder for the two motors.";
+    profinet::Submodule* encoderSubmodule = encoderModule.submodules.Create(0x00000143);
+    encoderSubmodule->properties.name = "Motor Encoder";
+    encoderSubmodule->properties.infoText = "Encoder for the two motors.";
+    //Outputs count
+    auto leftCountGetCallback = [this]() -> int16_t
+        {
+            return leftEncoderCounts;
+        };
+    output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(leftCountGetCallback);
+    output->properties.description = "Total encoder counts of the left motor.";
+    auto rightCountGetCallback = [this]() -> int16_t
+        {
+            return rightEncoderCounts;
+        };
+    output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightCountGetCallback);
+    output->properties.description = "Total encoder counts of the right motor.";
+    // Outputs counts per second
+    auto leftCountPerSecondGetCallback = [this]() -> int16_t
+        {
+            return leftEncoderCountsPerSecond;
+        };
+    output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(leftCountPerSecondGetCallback);
+    output->properties.description = "Encoder counts per second of the left motor.";
+    auto rightCountPerSecondGetCallback = [this]() -> int16_t
+        {
+            return rightEncoderCountsPerSecond;
+        };
+    output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightCountPerSecondGetCallback);
+    output->properties.description = "Encoder counts per second of the right motor.";
+    // parameters
+    auto countsPerRotationSetCallback = [this](const uint32_t value) -> void
+        {
+            countsPerRotation = value;
+        };
+    auto countsPerRotationGetCallback = [this]() -> uint32_t
+        {
+            return countsPerRotation;
+        };
+    profinet::Parameter* parameter = encoderSubmodule->parameters.Create<uint32_t, sizeof(uint32_t)>(static_cast<uint16_t>(125), countsPerRotationSetCallback, countsPerRotationGetCallback, countsPerRotation);
+    parameter->properties.name = "Counts per Rotation";
+    parameter->properties.description = "Number of counts of the encoder corresponding to one rotation of a wheel. Default=910.";
+    auto wheelRadiusSetCallback = [this](const uint32_t value) -> void
+        {
+            wheelRadius_mm = value;
+        };
+    auto wheelRadiusGetCallback = [this]() -> uint32_t
+        {
+            return wheelRadius_mm;
+        };
+    parameter = encoderSubmodule->parameters.Create<uint32_t, sizeof(uint32_t)>(static_cast<uint16_t>(126), wheelRadiusSetCallback, wheelRadiusGetCallback, wheelRadius_mm);
+    parameter->properties.name = "Wheel radius(mm)";
+    parameter->properties.description = "Radius of a wheel, in mm. Default=19mm.";
+    // outputs speed
+    auto leftSpeedGetCallback = [this]() -> int16_t
+        {
+            return static_cast<int16_t>(2*3.141*wheelRadius_mm*leftEncoderCountsPerSecond/countsPerRotation);
+        };
+    output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(leftSpeedGetCallback);
+    output->properties.description = "Speed of left wheel, in mm/s, as measured by encoder and calculated given the provided parameters for encoder counts/rotation and wheel radius.";
+    auto rightSpeedGetCallback = [this]() -> int16_t
+        {
+            return static_cast<int16_t>(2*3.141*wheelRadius_mm*rightEncoderCountsPerSecond/countsPerRotation);
+        };
+    output = encoderSubmodule->outputs.Create<int16_t, sizeof(int16_t)>(rightSpeedGetCallback);
+    output->properties.description = "Speed of right wheel, in mm/s, as measured by encoder and calculated given the provided parameters for encoder counts/rotation and wheel radius.";
+
     profinetInitialized = true;
     return true;
 }
-
-/*bool ZumoControl::IsInterfaceOnline(std::string interface)
-{
-    struct ifreq ifr;
-    int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
-    if (sock < 0)
-   {
-      return false;
-   }
-    memset(&ifr, 0, sizeof(ifr));
-    strcpy(ifr.ifr_name, interface.c_str());
-    if (ioctl(sock, SIOCGIFFLAGS, &ifr) < 0) 
-    {
-            return false;
-    }
-    close(sock);
-    return (ifr.ifr_flags & IFF_UP) && (ifr.ifr_flags & IFF_RUNNING);
-}*/
 
 bool ZumoControl::IsInterfaceOnline(std::string interface)
 {
@@ -267,7 +322,7 @@ bool ZumoControl::SendSerial(SerialConnection& serialConnection)
 {
     uint8_t buffer[4];
     // Left motor
-    buffer[0] = profizumo::FromZumoInput(profizumo::ZumoInput::leftMotorSpeed);
+    buffer[0] = profizumo::FromZumoInput(profizumo::ZumoInput::leftMotorSetSpeed);
     profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+1, 2, speedLeft);
     buffer[3] = profizumo::stopByte;
     if(!serialConnection.Send(buffer, 4))
@@ -276,7 +331,7 @@ bool ZumoControl::SendSerial(SerialConnection& serialConnection)
     }
 
     // Right motor
-    buffer[0] = profizumo::FromZumoInput(profizumo::ZumoInput::rightMotorSpeed);
+    buffer[0] = profizumo::FromZumoInput(profizumo::ZumoInput::rightMotorSetSpeed);
     profinet::toProfinet<int16_t, sizeof(int16_t)>(buffer+1, 2, speedRight);
     if(!serialConnection.Send(buffer, 4))
     {
@@ -361,6 +416,18 @@ bool ZumoControl::InterpretCommand(profizumo::ZumoOutput command, int16_t value)
             return true;
         case profizumo::ZumoOutput::ultrasoundDistance:
             distance = value;
+            return true;
+        case profizumo::ZumoOutput::leftEncoderCounts:
+            leftEncoderCounts = value;
+            return true;
+        case profizumo::ZumoOutput::rightEncoderCounts:
+            rightEncoderCounts = value;
+            return true;
+        case profizumo::ZumoOutput::leftEncoderCountsPerSecond:
+            leftEncoderCountsPerSecond = value;
+            return true;
+        case profizumo::ZumoOutput::rightEncoderCountsPerSecond:
+            rightEncoderCountsPerSecond = value;
             return true;
         default:
             return false;
