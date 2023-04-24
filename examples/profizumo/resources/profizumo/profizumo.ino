@@ -24,6 +24,8 @@
 
 // Constants
 #define LED_PIN 13
+// Which serial port to use. Set to "Serial" for communication via microUSB, and to "Serial1" for GPIO based com.
+#define SERIAL_PORT Serial1
 
 // Forward declactions
 void serialOutput(profizumo::ZumoOutput command, int value);
@@ -37,8 +39,8 @@ void setup()
   Wire.begin();
   
   pinMode(LED_PIN, OUTPUT);
-  Serial.begin(9600);
-  while (!Serial) 
+  SERIAL_PORT.begin(9600, SERIAL_8N1);
+  while (!SERIAL_PORT) 
   {
     // busy wait for serial port to connect.
   }
@@ -62,9 +64,9 @@ void receiveSerial()//serialEvent()
   static int firstMessage = 0;
   static int secondMessage = 0;
 
-  while(Serial.available()>=1)
+  while(SERIAL_PORT.available()>=1)
   { 
-    int val = Serial.read();
+    int val = SERIAL_PORT.read();
     bool commandComplete = false;
     switch(step)
     {
@@ -100,9 +102,9 @@ void receiveSerial()//serialEvent()
  */
 void serialOutput(profizumo::ZumoOutput command, int16_t value)
 {
-  Serial.write(profizumo::FromZumoOutput(command));
+  SERIAL_PORT.write(profizumo::FromZumoOutput(command));
   // Little endian to network/big endian conversion
-  Serial.write((value >> 8 ) & 0xFF);
-  Serial.write((value      ) & 0xFF);
-  Serial.write(profizumo::stopByte);
+  SERIAL_PORT.write((value >> 8 ) & 0xFF);
+  SERIAL_PORT.write((value      ) & 0xFF);
+  SERIAL_PORT.write(profizumo::stopByte);
 }

@@ -367,7 +367,7 @@ bool ZumoControl::ReceiveSerial(SerialConnection& serialConnection)
 void ZumoControl::RunController()
 {
     SerialConnection serialConnection{};
-    while(!serialConnection.Connect())
+    while(!serialConnection.Connect("/dev/ttyAMA0"))
     {
         Log(profinet::logError, "Could not establish serial connection. Retrying in 5s...");
         std::this_thread::sleep_for (std::chrono::seconds(5));

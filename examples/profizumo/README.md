@@ -43,13 +43,23 @@ Steps:
   - Run ``./profizumo -e ./``
   - Copy the GSDML (e.g. via a USB stick) to the computer of the PLC.
   - Start TIA Portal, install the GSDML and add it to the installed devices.
+- Configure serial port/UART0:
+  - Type ``sudo nano /boot/config.txt``.
+  - Find commented out line ``#dtparam=spi=on`` and remove comment, i.e. such that it reads ``#dtparam=spi=on``.
+  - Add the following lines at the bottom of config.txt:
+    ```
+	enable_uart=1
+	dtoverlay=uart0
+	```
+  - There might have been other steps which have to be done, depending on the configuration. See e.g.: 
+    - https://maker-tutorials.com/uart-schnittstelle-am-raspberry-pi-aktiveren/
+  - To test serial communication, the easiest is to first directly connect TX and RX of the Raspberry. It will thus send information to itself, such that you definitely know if something is not working due to the Raspberry config, or due to something else.
 - Configure to autostart profizumo on startup
   - Type ``sudo nano /lib/systemd/system/profizumo.service`` into the console.
   - Add the following content to the file:
     ```
 	[Unit]
-	Description=profizumo
-	After=network-online.target
+	Description=Profizumo launcher
 	
 	[Service]
 	Type=idle
@@ -59,7 +69,7 @@ Steps:
 	ExecStart=/usr/bin/sudo /home/username/profipp/scripts/start_profizumo.sh
 	
 	[Install]
-	WantedBy=network-online.target
+	WantedBy=default.target
 	```
   - Change access permissions: ``sudo chmod 644 /lib/systemd/system/profizumo.service`` and ``sudo chmod 644 //home/username/profipp/scripts/start_profizumo.sh``
   - Tell systemd to run this service:
