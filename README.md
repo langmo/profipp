@@ -27,11 +27,12 @@ Steps:
 	
 - Enable SSH: Start->Preferences->Raspberry Pi Configuration ->Interfaces -> Check "SSH" and "Serial Console"
 - Disable DHCP client daemon to adjust network interface settings (interferes with Profinet control of the interfaces): Enter `sudo nano /etc/dhcpcd.conf`, then add line `denyinterfaces eth*`. Then, reboot (`sudo reboot`)
-- Install cmake:
+- Install cmake (via snap, since version from apt too old as of 2023-04-20):
   ```
   sudo apt update
   sudo apt install snapd
   sudo reboot
+  sudo snap install core
   sudo snap install cmake --classic
   cmake --version
   ```
@@ -92,4 +93,8 @@ Now, build the debug from VS Code, go to debug and run valgrind:
 cd ~/profipp/debug/examples/profizumo/
 sudo valgrind --leak-check=yes ./profizumo -s
 ```
-   
+
+## Banana Pi M2 Zero
+The Raspbian image of the banana pi is pretty old. In case you need a new gcc compiler (for C++17), see
+https://solarianprogrammer.com/2017/12/08/raspberry-pi-raspbian-install-gcc-compile-cpp-17-programs/
+Important: The description is for gcc10.1, but you should do everything for gcc9.1 which is in the same repo. The banana pi uses Raspbian stretch, only the gcc9.1 version works there

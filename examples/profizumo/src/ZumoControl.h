@@ -17,10 +17,10 @@ public:
     ZumoControl (const ZumoControl&) = delete;
     ZumoControl& operator= (const ZumoControl&) = delete;
 
-    bool InitializeProfinet();
+    bool InitializeProfinet(const std::string_view& mainNetworkInterface="wlan0");
     bool StartProfinet();
     bool ExportGDSML(const char* filename) const;
-    void RunController();
+    void RunController(const std::string_view& serialPort="/dev/ttyAMA0");
 private:
     profinet::LoggerType logger;
     void Log(profinet::LogLevel logLevel, const char* format, ...) noexcept;    

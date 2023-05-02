@@ -6,7 +6,7 @@ profizumo itself is licenced under the GPL version 3. See LICENSE for details.
 
 ## Installation on Raspberry Pi
 Needed: 
-- Raspberry Pi 3 Model B+ or higher
+- Raspberry Pi 3 Model B+ or higher, or Banana Pi M2 Zero or higher
 - Pololu Zumo 32U4. The Arduino version should also work, but the 32U4 is assumed in the following.
 Steps:
 - Install profi++
@@ -43,7 +43,7 @@ Steps:
   - Run ``./profizumo -e ./``
   - Copy the GSDML (e.g. via a USB stick) to the computer of the PLC.
   - Start TIA Portal, install the GSDML and add it to the installed devices.
-- Configure serial port/UART0:
+- Raspberry Pi OS (Raspberry Pi 3 Model B+ or higher): Configure serial port/UART0:
   - Type ``sudo nano /boot/config.txt``.
   - Find commented out line ``#dtparam=spi=on`` and remove comment, i.e. such that it reads ``#dtparam=spi=on``.
   - Add the following lines at the bottom of config.txt:
@@ -54,6 +54,9 @@ Steps:
   - There might have been other steps which have to be done, depending on the configuration. See e.g.: 
     - https://maker-tutorials.com/uart-schnittstelle-am-raspberry-pi-aktiveren/
   - To test serial communication, the easiest is to first directly connect TX and RX of the Raspberry. It will thus send information to itself, such that you definitely know if something is not working due to the Raspberry config, or due to something else.
+- Armbian (Banana Pi M2 Zero or higher):
+  - Enable UART 3 in Settings->Armbian Settings to enable UART via pins 8 and 10. Reboot.
+  - In the following, use /dev/ttyS3 .
 - Configure to autostart profizumo on startup
   - Type ``sudo nano /lib/systemd/system/profizumo.service`` into the console.
   - Add the following content to the file:

@@ -40,9 +40,9 @@ void ZumoControl::Log(profinet::LogLevel logLevel, const char* format, ...) noex
    logger(logLevel, std::move(message));
 }
 
-bool ZumoControl::InitializeProfinet()
+bool ZumoControl::InitializeProfinet(const std::string_view& mainNetworkInterface)
 {
-    profinet.GetProperties().mainNetworkInterface = "wlan0";
+    profinet.GetProperties().mainNetworkInterface = mainNetworkInterface;
     profinet::Device& device = profinet.GetDevice();
 
     device.properties.vendorName = "FH Technikum Wien";
@@ -364,10 +364,10 @@ bool ZumoControl::ReceiveSerial(SerialConnection& serialConnection)
     }
     return true;
 }
-void ZumoControl::RunController()
+void ZumoControl::RunController(const std::string_view& serialPort)
 {
     SerialConnection serialConnection{};
-    while(!serialConnection.Connect("/dev/ttyAMA0"))
+    while(!serialConnection.Connect(serialPort))
     {
         Log(profinet::logError, "Could not establish serial connection. Retrying in 5s...");
         std::this_thread::sleep_for (std::chrono::seconds(5));
