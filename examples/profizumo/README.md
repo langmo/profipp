@@ -66,15 +66,16 @@ Steps:
 	
 	[Service]
 	Type=idle
+  WorkingDirectory=/home/username/profipp/build/examples/profizumo
 	# Wait 10s upon reboot to ensure wifi is up and running
 	ExecStartPre=/bin/sleep 10
 	# replace path to whereever you installed profizumo
-	ExecStart=/usr/bin/sudo /home/username/profipp/scripts/start_profizumo.sh
+	ExecStart=/usr/bin/sudo /home/username/profipp/build/examples/profizumo/profizumo -s -e ./ -i wlan0 -u /dev/ttyS3
 	
 	[Install]
 	WantedBy=default.target
 	```
-  - Change access permissions: ``sudo chmod 644 /lib/systemd/system/profizumo.service`` and ``sudo chmod 644 //home/username/profipp/scripts/start_profizumo.sh``
+  - Change access permissions: ``sudo chmod 644 /lib/systemd/system/profizumo.service``
   - Tell systemd to run this service:
     ```
     sudo systemctl daemon-reload
