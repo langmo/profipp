@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-std::string get_option(const std::vector<std::string>& args, const std::string_view& option_name, const std::string_view& default="") 
+std::string get_option(const std::vector<std::string>& args, const std::string_view& option_name, const std::string_view& defaultVal="") 
 {
     for (auto it = args.begin(), end = args.end(); it != end; ++it) 
     {
@@ -13,7 +13,7 @@ std::string get_option(const std::vector<std::string>& args, const std::string_v
                 return *(it + 1);
         }
     }
-    return default;
+    return std::string(defaultVal);
 }
 bool has_option(const std::vector<std::string>& args, const std::string_view& option_name) 
 {
@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     const bool start = has_option(args, "-s");
     const std::string filename = get_option(args, "-e");
     const std::string mainNetworkInterface = get_option(args, "-i", "wlan0");
-    const std::string serial = get_option(args, "-u", "/dev/ttyAMA0")
+    const std::string serial = get_option(args, "-u", "/dev/ttyAMA0");
     if (argc < 2) 
     {
         std::cout << "no options provided!\n";
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     if(start)
     {
         control.StartProfinet();
-        control.RunController();
+        control.RunController(serial);
     }
 
 }
