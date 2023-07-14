@@ -18,7 +18,7 @@ Needed:
 Steps:
 - Install fresh Raspberry Pi OS (32bit, full)
 - Connect Raspberry Pi to screen, mouse and keyboard (ssh over ethernet can make problems, since profinet can change IP settings)
-- Enable wlan. If you want to connect to eduroam, see https://www.elektronik-kompendium.de/sites/raspberry-pi/2205191.htm . It might be necessary to run the following after rebotting the Raspberry Pi:
+- Enable wlan. If you want to connect to eduroam, see https://www.elektronik-kompendium.de/sites/raspberry-pi/2205191.htm . It might be necessary to run the following after rebooting the Raspberry Pi:
 	```
 	sudo rm /var/run/wpa_supplicant/wlan0
 	sudo killall wpa_supplicant
@@ -93,6 +93,13 @@ Now, build the debug from VS Code, go to debug and run valgrind:
 cd ~/profipp/debug/examples/profizumo/
 sudo valgrind --leak-check=yes ./profizumo -s
 ```
+
+## Creating images
+You should regularly create an image of your SD card in case the hardware fails or (more likely) you accidentially modify OS or profi++ settings in a not (easily) revertible way.
+
+On windows, you can e.g. use WIN32 DISK IMAGER ( https://win32diskimager.org/ ). It can both create images of an SD card ("read") or write an existing image to a SD card ("write").
+
+In case you switch SD cards, it might happen that the new SD card is too small for the existing image. In this case, you can try PiShrink ( https://github.com/Drewsif/PiShrink ) to reduce the image size (the shrunken image is automatically extended to the maximal size the new SD card allows for upon first booting of the image).
 
 ## Banana Pi M2 Zero
 The Raspbian image of the banana pi is pretty old. In case you need a new gcc compiler (for C++17), see
