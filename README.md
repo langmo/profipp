@@ -11,20 +11,27 @@ This software is based/uses the following projects:
 ## Licence
 profi++ itself is licenced under the GPL version 3. See LICENSE for details. 
 
-## Installation on Raspberry Pi
+## Installation (short version)
+Run:
+```
+./build_and_install_release.sh 
+```
+
+## Installation (long version)
 Needed: 
 - Raspberry Pi 3 Model B+
 - or Raspberry Pi 4
+- or Banana Pi M2 Zero or higher
+- or similar
 Steps:
 - Install fresh Raspberry Pi OS (32bit, full)
 - Connect Raspberry Pi to screen, mouse and keyboard (ssh over ethernet can make problems, since profinet can change IP settings)
-- Enable wlan. If you want to connect to eduroam, see https://www.elektronik-kompendium.de/sites/raspberry-pi/2205191.htm . It might be necessary to run the following after rebooting the Raspberry Pi:
+- Enable wifi. If you want to connect to eduroam, see https://www.elektronik-kompendium.de/sites/raspberry-pi/2205191.htm . It might be necessary to run the following after rebooting the Raspberry Pi:
 	```
 	sudo rm /var/run/wpa_supplicant/wlan0
 	sudo killall wpa_supplicant
 	sudo wpa_supplicant -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
 	```
-	
 - Enable SSH: Start->Preferences->Raspberry Pi Configuration ->Interfaces -> Check "SSH" and "Serial Console"
 - Disable DHCP client daemon to adjust network interface settings (interferes with Profinet control of the interfaces): Enter `sudo nano /etc/dhcpcd.conf`, then add line `denyinterfaces eth*`. Then, reboot (`sudo reboot`)
 - Install cmake (via snap, since version from apt too old as of 2023-04-20):
@@ -36,7 +43,14 @@ Steps:
   sudo snap install cmake --classic
   cmake --version
   ```
-  The last command is for verifying that the correct version is installed.
+  The last command is for verifying that the correct version is installed. Now, you should test if you can also run cmake under sudo rights:
+  ```
+  sudo cmake --version
+  ```
+  If sudo cannot find cmake, the following might help:
+  ```
+  sudo ln -s /snap/bin/cmake /usr/local/bin/cmake
+  ```
 - Install git:
   ```
   sudo apt install git
@@ -52,6 +66,12 @@ Steps:
   cd /home/<username>/profipp/
   git clone --recurse-submodules https://github.com/langmo/profipp.git
   ```
+- Run:
+  ```
+  ./build_and_install_release.sh 
+  ```
+- Now, profi++ is completely installed. To learn on how to use it from another project, see examples/profiecho/
+## Programming via VS Code from Windows
 - To program on the Raspberry Pi from a Windows laptop over a directly connected Ethernet cable:
   - On the Raspberry:
     ```
@@ -66,7 +86,7 @@ Steps:
   - The connection takes a while to establish. When connected, install additional packages on the remote machine. In VS Code on the laptop, in the new window (remote access), add "C++ Extension Pack", "CMake" and "CMake Tools (Extension)" and "C++ class creator"
   - Then, in VS Code, press File -> Open Folder. Now, select the Rasperry folder where you installed the repo. You might be asked for the password again, so make sure the terminal is showing. You are asked "Would you like to configure project "proficontrol"->Press "Yes".
   
-## Debugging Memory on Raspberry Pi
+## Debugging Memory
 For debugging, we use valgrind. Do not(!) use
 ```
  sudo apt install valgrind
@@ -90,8 +110,8 @@ should result in valgrind-3.20.0 or newer.
 
 Now, build the debug from VS Code, go to debug and run valgrind:
 ```
-cd ~/profipp/debug/examples/profizumo/
-sudo valgrind --leak-check=yes ./profizumo -s
+cd ~/profipp/debug/examples/profiecho/
+sudo valgrind --leak-check=yes ./profiecho -s
 ```
 
 ## Creating images

@@ -62,8 +62,3 @@ target_link_libraries(pnet
   INTERFACE
   $<$<CONFIG:Coverage>:--coverage>
   )
-
-install (FILES
-  include/pnal_config.h
-  DESTINATION include
-  )

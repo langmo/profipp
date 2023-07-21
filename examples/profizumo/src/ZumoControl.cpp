@@ -364,7 +364,7 @@ bool ZumoControl::ReceiveSerial(SerialConnection& serialConnection)
     }
     return true;
 }
-void ZumoControl::RunController(const std::string_view& serialPort)
+void ZumoControl::RunController(const std::string& serialPort)
 {
     SerialConnection serialConnection{};
     while(!serialConnection.Connect(serialPort))

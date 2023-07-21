@@ -1,0 +1,19 @@
+# profipp-config-version.cmake - checks version of installed profipp when including
+# profipp via find_package(profipp ...) in a client target.
+# The requested major version ${PACKAGE_FIND_VERSION_MINOR} must match, 
+# the requested minor version ${PACKAGE_FIND_VERSION_MINOR} must be less than or equal 
+# to the installed one.
+
+set(PACKAGE_VERSION @PROFIPP_VERSION@)
+
+if("${PACKAGE_FIND_VERSION_MAJOR}" EQUAL "@PROFIPP_VERSION_MAJOR@")
+    if ("${PACKAGE_FIND_VERSION_MINOR}" EQUAL "@PROFIPP_VERSION_MINOR@")
+        set(PACKAGE_VERSION_EXACT TRUE)
+    elseif("${PACKAGE_FIND_VERSION_MINOR}" LESS "@PROFIPP_VERSION_MINOR@")
+        set(PACKAGE_VERSION_COMPATIBLE TRUE)
+    else()
+        set(PACKAGE_VERSION_UNSUITABLE TRUE)
+    endif()
+else()
+    set(PACKAGE_VERSION_UNSUITABLE TRUE)
+endif()

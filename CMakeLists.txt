@@ -1,10 +1,17 @@
 cmake_minimum_required (VERSION 3.14)
-project (PROFIPP VERSION 0.1.0)
+project (PROFIPP VERSION 1.0.0)
+
+set(PROFIPP_VERSION_MAJOR 1 CACHE STRING "major version" FORCE)
+set(PROFIPP_VERSION_MINOR 0 CACHE STRING "minor version" FORCE)
+set(PROFIPP_VERSION ${PROFIPP_VERSION_MAJOR}.${PROFIPP_VERSION_MINOR} CACHE STRING "version" FORCE)
+
+# Source file extensions must be explicit (=do not append extensions to a source file if it couldn't be found)
+cmake_policy(SET CMP0115 NEW)
 
 # Default settings if this is the main project
 if (CMAKE_PROJECT_NAME STREQUAL PROFIPP)
   # Make option visible in ccmake, cmake-gui
-  option (BUILD_SHARED_LIBS "Build shared library" OFF)
+  #option (BUILD_SHARED_LIBS "Build shared library" OFF)
 
   # Default to release build with debug info
   if (NOT CMAKE_BUILD_TYPE)
@@ -13,16 +20,19 @@ if (CMAKE_PROJECT_NAME STREQUAL PROFIPP)
       FORCE)
   endif (NOT CMAKE_BUILD_TYPE)
 
-  # Default to installing in build directory
-  #if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  #  set(CMAKE_INSTALL_PREFIX ${PROFIPP_BINARY_DIR}/install
-  #    CACHE PATH "Default install path" FORCE)
-  #endif()
-
   message(STATUS "Current build type is: ${CMAKE_BUILD_TYPE}")
-  message(STATUS "Current install path is: ${CMAKE_INSTALL_PREFIX}")
   message(STATUS "Building for ${CMAKE_SYSTEM_NAME}")
 endif()
+
+# Setup install directories
+set(include_dest "include/profipp${PROFIPP_VERSION}")
+set(main_lib_dest "lib/profipp${PROFIPP_VERSION}")
+set(lib_dest ${main_lib_dest}/${CMAKE_BUILD_TYPE})
+message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}/${lib_dest}")
+message(STATUS "Include path: ${CMAKE_INSTALL_PREFIX}/${include_dest}")
+message(STATUS "Use the following cmake commands to include profipp in your project:")
+message(STATUS "  find_package(profipp 1.0 REQUIRED)")
+message(STATUS "  target_link_libraries(your_target PUBLIC profipp)")
 
 # Always use standard .o suffix
 set(CMAKE_C_OUTPUT_EXTENSION_REPLACE 1)
@@ -38,5 +48,3 @@ set(PNET_MAX_SUBSLOTS         10
 add_subdirectory (osal)
 add_subdirectory (pnet)
 add_subdirectory (profipp)
-add_subdirectory (examples/profiecho)
-add_subdirectory (examples/profizumo)

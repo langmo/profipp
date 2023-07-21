@@ -73,5 +73,6 @@
     },
     "cpp.creator.headerFileContentPreset": "#ifndef {{*CLASSNAMEUPPER*}}_H\n#define {{*CLASSNAMEUPPER*}}_H\n\n#pragma once\nnamespace profinet\n{\nclass {{*CLASSNAME*}} final\n{\npublic:\n    {{*CLASSNAME*}}();\n    ~{{*CLASSNAME*}}();\n    \n    // Forbid to make copies, but move is OK.\n    {{*CLASSNAME*}}(const  {{*CLASSNAME*}}&) = delete;\n    {{*CLASSNAME*}}( {{*CLASSNAME*}}&&) = default;\n    {{*CLASSNAME*}}& operator= (const  {{*CLASSNAME*}}&) = delete;\n    {{*CLASSNAME*}}& operator= ( {{*CLASSNAME*}}&&) = default;\n\nprivate:\n\n};\n}\n#endif",
     "cpp.creator.sourceFileContentPreset": "#include \"{{*HEADERFILENAME*}}\"\nnamespace profinet\n{\n{{*CLASSNAME*}}::{{*CLASSNAME*}}()\n{\n\n}\n\n{{*CLASSNAME*}}::~{{*CLASSNAME*}}()\n{\n\n}\n}",
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cmake.configureSettings": {"CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}"}
 }

@@ -137,7 +137,7 @@ configure_file (
 
 # Add platform-dependent targets early, so they can be configured by
 # platform
-add_library(pnet "")
+add_library(pnet STATIC "")
 
 if (PNET_OPTION_DRIVER_ENABLE)
   include(${PNET_SOURCE_DIR}/src/drivers/drivers.cmake)
@@ -170,30 +170,6 @@ target_include_directories(pnet
   src/device
   )
 
-target_link_libraries(pnet PUBLIC osal)
-
-install (
-  TARGETS pnet
-  EXPORT ProfinetConfig
-  DESTINATION lib
-  )
-
-install(
-  EXPORT ProfinetConfig
-  DESTINATION cmake
-  )
-
-install (FILES
-  include/pnet_api.h
-  ${PNET_BINARY_DIR}/include/pnet_export.h
-  ${PNET_BINARY_DIR}/include/pnet_options.h
-  #${PNET_BINARY_DIR}/include/pnet_version.h
-  DESTINATION include
-  )
-
 add_subdirectory (src)
 
-include (InstallRequiredSystemLibraries)
-set (CPACK_RESOURCE_FILE_LICENSE "${PNET_SOURCE_DIR}/LICENSE.md")
-set (CPACK_PACKAGE_CONTACT info.profinet@rt-labs.com)
-include (CPack)
+target_link_libraries(pnet PUBLIC osal)

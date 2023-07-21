@@ -20,7 +20,7 @@ public:
     bool InitializeProfinet(const std::string_view& mainNetworkInterface="wlan0");
     bool StartProfinet();
     bool ExportGDSML(const char* filename) const;
-    void RunController(const std::string_view& serialPort="/dev/ttyAMA0");
+    void RunController(const std::string& serialPort="/dev/ttyAMA0");
 private:
     profinet::LoggerType logger;
     void Log(profinet::LogLevel logLevel, const char* format, ...) noexcept;    

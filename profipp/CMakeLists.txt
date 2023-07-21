@@ -1,14 +1,12 @@
-cmake_minimum_required (VERSION 3.14)
-project (PROFIPP VERSION 0.1.0)
-
-cmake_policy(SET CMP0115 NEW)
-add_library(profipp "")
+add_library(profipp SHARED "")
 
 target_include_directories(profipp
+  PUBLIC
+  $<BUILD_INTERFACE:${PROFIPP_SOURCE_DIR}/profipp/include> # for include headers when building
+  $<INSTALL_INTERFACE:${include_dest}> # for include headers in install mode (for other projects to reuse profipp)
   PRIVATE
   src
   src/pugixml
-  include
   ${PNET_SOURCE_DIR}/include
   )
 
@@ -38,11 +36,24 @@ target_sources(profipp
   )
 
 target_compile_features(profipp PRIVATE cxx_std_17)
-target_link_libraries (profipp PUBLIC pnet)
+target_link_libraries (profipp PRIVATE pnet)
 
-install (TARGETS profipp DESTINATION lib)
+# Install compiled library to ${CMAKE_INSTALL_PREFIX}/${lib_dest} and 
+# includes to ${CMAKE_INSTALL_PREFIX}/${include_dest}.
+# CMAKE_INSTALL_PREFIX is usually /usr/local/ under Linux, so we e.g. install and include to
+# /usr/local/lib/profipp-1.0/Release
+# /usr/local/include/profipp-1.0/
+install(TARGETS profipp EXPORT profipp DESTINATION "${lib_dest}")
+install(DIRECTORY include/ DESTINATION "${include_dest}")
+# Create profipp-config.cmake and a profipp-config-version.cmake files in ${CMAKE_INSTALL_PREFIX}/${main_lib_dest} for other projects to easily reuse/include profipp
+# profipp-config.cmake chooses the correct cmake file in one of the main_lib_dest subdirectories specified by lib_dest to include (created in the next step), 
+# depending on the build type.
+# profipp-config-version.cmake ensures that the requested major version of profipp matches the installed one,
+# and that the requested minor version is smaller or equal to the installed one.
+configure_file(profipp-config-version.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/profipp-config-version.cmake @ONLY)
+install(FILES profipp-config.cmake ${CMAKE_CURRENT_BINARY_DIR}/profipp-config-version.cmake DESTINATION ${main_lib_dest})
+# Create profipp.cmake file in ${CMAKE_INSTALL_PREFIX}/${lib_dest} for other projects to easily reuse/include profipp
+install(EXPORT profipp DESTINATION "${lib_dest}")
 
-include (InstallRequiredSystemLibraries)
-set (CPACK_RESOURCE_FILE_LICENSE "${PROFIPP_SOURCE_DIR}/LICENSE")
-set (CPACK_PACKAGE_CONTACT moritz.lang@technikum-wien.at)
-include (CPack)
+# Search for compiler-provided system runtime libraries and add install rules for them
+#include (InstallRequiredSystemLibraries)

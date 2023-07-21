@@ -46,12 +46,6 @@ target_link_libraries(osal PUBLIC
   $<$<CONFIG:Coverage>:--coverage>
   )
 
-install(FILES
-  src/linux/sys/osal_cc.h
-  src/linux/sys/osal_sys.h
-  DESTINATION include/sys
-  )
-
 if (BUILD_TESTING)
   set(GOOGLE_TEST_INDIVIDUAL TRUE)
 endif()
