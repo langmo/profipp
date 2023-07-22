@@ -259,7 +259,7 @@ int pnal_set_ip_suite (
    os_ip_to_string (*p_netmask, netmask_string);
    os_ip_to_string (*p_gw, gateway_string);
 
-   argv[0] = "set_network_parameters";
+   argv[0] = "profipp_network_parameters";
    argv[1] = interface_name;
    argv[2] = (char *)&ip_string;
    argv[3] = (char *)&netmask_string;

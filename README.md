@@ -62,8 +62,7 @@ Steps:
   Now, you will be only asked for your password the first time. Ask the repo owner for the password, or, better, the "personal access token" (github is not supporting normal password authetification anymore, you instead type in your access token instead of the password). If you are the repo owner: On the repository webpage, click on the top right on your user icon -> settings -> left, at the bottom on "Developper Settings" -> Personal access token. Create a new one. Activate checkbox(es) "repo".
   Now, you can install the repo:
   ```
-  mkdir /home/<username>/profipp/
-  cd /home/<username>/profipp/
+  cd ~
   git clone --recurse-submodules https://github.com/langmo/profipp.git
   ```
 - Run:

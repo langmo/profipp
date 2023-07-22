@@ -55,5 +55,9 @@ install(FILES profipp-config.cmake ${CMAKE_CURRENT_BINARY_DIR}/profipp-config-ve
 # Create profipp.cmake file in ${CMAKE_INSTALL_PREFIX}/${lib_dest} for other projects to easily reuse/include profipp
 install(EXPORT profipp DESTINATION "${lib_dest}")
 
+# Copy script to /usr/local/bin/ which is responsible for changing the IP address upon request by the profinet controller
+install(FILES ${PROFIPP_SOURCE_DIR}/resources/profipp_network_parameters DESTINATION "${bin_dest}" PERMISSIONS WORLD_EXECUTE WORLD_READ)
+
 # Search for compiler-provided system runtime libraries and add install rules for them
 #include (InstallRequiredSystemLibraries)
+include(InstallRequiredSystemLibraries)
