@@ -1,4 +1,4 @@
-add_library(profipp SHARED "")
+add_library(profipp STATIC "")
 
 target_include_directories(profipp
   PUBLIC
@@ -36,13 +36,15 @@ target_sources(profipp
   )
 
 target_compile_features(profipp PRIVATE cxx_std_17)
-target_link_libraries (profipp PRIVATE pnet)
+target_link_libraries (profipp PUBLIC pnet)
 
 # Install compiled library to ${CMAKE_INSTALL_PREFIX}/${lib_dest} and 
 # includes to ${CMAKE_INSTALL_PREFIX}/${include_dest}.
 # CMAKE_INSTALL_PREFIX is usually /usr/local/ under Linux, so we e.g. install and include to
 # /usr/local/lib/profipp-1.0/Release
 # /usr/local/include/profipp-1.0/
+install(TARGETS pnet EXPORT profipp DESTINATION  "${lib_dest}")
+install(TARGETS osal EXPORT profipp DESTINATION  "${lib_dest}")
 install(TARGETS profipp EXPORT profipp DESTINATION "${lib_dest}")
 install(DIRECTORY include/ DESTINATION "${include_dest}")
 # Create profipp-config.cmake and a profipp-config-version.cmake files in ${CMAKE_INSTALL_PREFIX}/${main_lib_dest} for other projects to easily reuse/include profipp

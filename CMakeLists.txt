@@ -32,6 +32,8 @@ set(bin_dest "bin")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}/${lib_dest}")
 message(STATUS "Include path: ${CMAKE_INSTALL_PREFIX}/${include_dest}")
 message(STATUS "Use the following cmake commands to include profipp in your project:")
+message(STATUS "  find_package(Threads REQUIRED)")
+message(STATUS "  target_link_libraries(your_target INTERFACE Threads::Threads)")
 message(STATUS "  find_package(profipp 1.0 REQUIRED)")
 message(STATUS "  target_link_libraries(your_target PUBLIC profipp)")
 
