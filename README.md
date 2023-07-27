@@ -116,7 +116,7 @@ sudo valgrind --leak-check=yes ./profiecho -s
 ## Creating images
 You should regularly create an image of your SD card in case the hardware fails or (more likely) you accidentially modify OS or profi++ settings in a not (easily) revertible way.
 
-On windows, you can e.g. use WIN32 DISK IMAGER ( https://win32diskimager.org/ ). It can both create images of an SD card ("read") or write an existing image to a SD card ("write").
+On windows, you can e.g. use WIN32 DISK IMAGER ( https://win32diskimager.org/ ). It can both create images of an SD card ("read") or write an existing image to a SD card ("write"). However, we experienced that sometimes (always?) the image is not working anymore once it is burned on another SD card. As a workaround, we found that the image is working again once it is shrunken by PiShrink (see next step).
 
 In case you switch SD cards, it might happen that the new SD card is too small for the existing image. In this case, you can try PiShrink ( https://github.com/Drewsif/PiShrink ) to reduce the image size (the shrunken image is automatically extended to the maximal size the new SD card allows for upon first booting of the image).
 
