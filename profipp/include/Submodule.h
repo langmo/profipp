@@ -67,8 +67,8 @@ public:
                 if(numbytes < length)
                     return false;
                 std::array<char, length> value;
-                auto ptr = static_cast<uint8_t*>(value.data());
-                bool result = fromProfinet<uint8_t*, length>(buffer, numbytes, &ptr);
+                auto ptr = value.data();
+                bool result = fromProfinet<char*, length>(buffer, numbytes, &ptr);
                 if(!result)
                     return false;
                 setCallback(std::string(value.data(), length));
@@ -120,7 +120,7 @@ public:
                 if(numbytes < length)
                     return false;
                 auto value = getCallback(value);
-                return toProfinet<uint8_t*, length>(buffer, numbytes, static_cast<const uint8_t*>(value.c_str()));
+                return toProfinet<uint8_t*, length>(buffer, numbytes, value.c_str());
             };
             auto result{Create(wrapperGet, length)};
             if(result)

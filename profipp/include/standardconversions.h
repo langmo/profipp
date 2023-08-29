@@ -102,7 +102,7 @@ namespace profinet
     {
         if(numbytes < lengthInBytes)
             return false;
-        if constexpr (std::is_same_v<T, uint8_t*>)
+        if constexpr (std::is_pointer_v<T> && !std::is_const_v<std::remove_pointer_t<T>>)
         {
             memcpy(*value, buffer, lengthInBytes);
             return true;
@@ -163,7 +163,7 @@ namespace profinet
     {
         if(numbytes < lengthInBytes)
             return false;
-        if constexpr (std::is_same_v<T, uint8_t*> || std::is_same_v<T, const uint8_t*>)
+        if constexpr (std::is_pointer_v<T>)
         {
             memcpy(buffer, value, lengthInBytes);
             return true;
