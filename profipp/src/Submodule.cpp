@@ -27,6 +27,19 @@ Output* Submodule::Outputs::Create(const Output::GetCallbackType& getCallback, s
     return &list.emplace_back(getCallback, lengthInBytes);
 }
 
+void Submodule::Inputs::SetAllUpdatedCallback(const Submodule::Inputs::AllUpdatedCallbackType& allUpdatedCallback_)
+{
+    allUpdatedCallback = allUpdatedCallback_;
+}
+void Submodule::Inputs::ClearAllUpdatedCallback()
+{
+    allUpdatedCallback = nullptr;
+}
+const Submodule::Inputs::AllUpdatedCallbackType& Submodule::Inputs::GetAllUpdatedCallback() const
+{
+    return allUpdatedCallback;
+}
+
 std::size_t Submodule::Inputs::GetLengthInBytes() const
 {
     std::size_t length{0};

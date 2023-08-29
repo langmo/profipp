@@ -43,6 +43,8 @@ private:
     std::size_t inputLengthInBytes;
     std::size_t outputLengthInBytes;
 
+    Submodule::Inputs::AllUpdatedCallbackType allUpdatedCallback{};
+
     // initialize to PNET_IOXS_BAD=0x00 (see pnet_ioxs_values in pnet_api.h). They will be
     // (hopefully) switched to PNET_IOXS_GOOD=0x80 during the first
     // cyclic exchange.

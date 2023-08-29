@@ -260,8 +260,10 @@ inline bool CreateDOM(const Profinet& profinet, pugi::xml_document& doc)
                     dataItemNo++;
                     auto dataItem{inputElem.append_child("DataItem")};
                     dataItem.append_attribute("TextId").set_value(addText(str_printf("SUBMODULE%u_INPUT%u", submodule.GetId(), dataItemNo), output.properties.description));
-                    //TODO: How to determine data types?
                     dataItem.append_attribute("DataType").set_value(output.properties.dataType.c_str());
+                    // Attribute Length only necessary/allowed for strings
+                    if(!output.properties.length.empty())
+                        dataItem.append_attribute("Length").set_value(output.properties.length.c_str());
                 }
             }
 
@@ -276,8 +278,10 @@ inline bool CreateDOM(const Profinet& profinet, pugi::xml_document& doc)
                     dataItemNo++;
                     auto dataItem{outputElem.append_child("DataItem")};
                     dataItem.append_attribute("TextId").set_value(addText(str_printf("SUBMODULE%u_OUTPUT%u", submodule.GetId(), dataItemNo), input.properties.description));
-                    //TODO: How to determine data types?
                     dataItem.append_attribute("DataType").set_value(input.properties.dataType.c_str());
+                    // Attribute Length only necessary/allowed for strings
+                    if(!input.properties.length.empty())
+                        dataItem.append_attribute("Length").set_value(input.properties.length.c_str());
                 }
             }
 

@@ -13,6 +13,7 @@
 #include <functional>
 #include <memory>
 #include <sstream>
+#include <array>
 namespace profinet
 {
 class Submodule
@@ -21,6 +22,7 @@ public:
     Submodule(uint16_t id_);
     uint16_t GetId() const;
     
+    
 private:
     const uint16_t id;
 
@@ -28,9 +30,13 @@ public:
     class Inputs : public tools::VectorView<Input>
     {
     public:
+        using AllUpdatedCallbackType = std::function<void()>;
         Inputs() : tools::VectorView<Input>{}
         {
         }
+        void SetAllUpdatedCallback(const AllUpdatedCallbackType& allUpdatedCallback);
+        void ClearAllUpdatedCallback();
+        const AllUpdatedCallbackType& GetAllUpdatedCallback() const;
         Input* Create(const Input::SetCallbackType& setCallback, std::size_t lengthInBytes);
         template<typename T, std::size_t lengthInBytes=sizeof(T)> Input* Create(
             std::function<void(const T value)> setCallback)
@@ -52,8 +58,34 @@ public:
                 result->properties.dataType = gsdmlName<T>;
             }
             return result;
-        }  
+        }
+        template<std::size_t length> Input* CreateString(
+            std::function<void(const std::string&)> setCallback)
+        {
+            auto wrapperSet = [setCallback](const uint8_t* buffer, std::size_t numbytes) -> bool
+            {
+                if(numbytes < length)
+                    return false;
+                std::array<char, length> value;
+                auto ptr = static_cast<uint8_t*>(value.data());
+                bool result = fromProfinet<uint8_t*, length>(buffer, numbytes, &ptr);
+                if(!result)
+                    return false;
+                setCallback(std::string(value.data(), length));
+                return true;
+            };
+            auto result{Create(wrapperSet, length)};
+            if(result)
+            {
+                result->properties.dataType = "OctetString";
+                result->properties.length = std::to_string((int)length);
+            }
+            return result;
+        }
         std::size_t GetLengthInBytes() const;
+
+    private:
+        AllUpdatedCallbackType allUpdatedCallback{};
     } inputs;
     class Outputs : public tools::VectorView<Output>
     {
@@ -77,6 +109,24 @@ public:
             if(result)
             {
                 result->properties.dataType = gsdmlName<T>;
+            }
+            return result;
+        }
+        template<std::size_t length> Output* CreateString(
+            std::function<std::string()> getCallback)
+        {
+            auto wrapperGet = [getCallback](uint8_t* buffer, std::size_t numbytes) -> bool
+            {
+                if(numbytes < length)
+                    return false;
+                auto value = getCallback(value);
+                return toProfinet<uint8_t*, length>(buffer, numbytes, static_cast<const uint8_t*>(value.c_str()));
+            };
+            auto result{Create(wrapperGet, length)};
+            if(result)
+            {
+                result->properties.dataType = "OctetString";
+                result->properties.length = std::to_string((int)length);
             }
             return result;
         }

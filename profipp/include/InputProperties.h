@@ -12,6 +12,8 @@ namespace profinet
     struct InputProperties
     {
         std::string dataType{"unknown"};
+        // set to length for strings. Keep empty for non-strings.
+        std::string length{""};
         std::string description{"no description available"};
     };
 }

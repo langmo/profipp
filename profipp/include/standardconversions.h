@@ -104,7 +104,7 @@ namespace profinet
             return false;
         if constexpr (std::is_same_v<T, uint8_t*>)
         {
-            memcpy(value, buffer, lengthInBytes);
+            memcpy(*value, buffer, lengthInBytes);
             return true;
         }
         else if constexpr (std::is_arithmetic_v<T>)
@@ -163,9 +163,9 @@ namespace profinet
     {
         if(numbytes < lengthInBytes)
             return false;
-        if constexpr (std::is_same_v<T, uint8_t*>)
+        if constexpr (std::is_same_v<T, uint8_t*> || std::is_same_v<T, const uint8_t*>)
         {
-            memcpy(buffer, &value, lengthInBytes);
+            memcpy(buffer, value, lengthInBytes);
             return true;
         }
         else if constexpr (std::is_arithmetic_v<T>)

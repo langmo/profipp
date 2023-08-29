@@ -8,6 +8,7 @@ SubmoduleInstance::SubmoduleInstance() : unknownModule{true}, inputLengthInBytes
 
 bool SubmoduleInstance::Initialize(const Submodule& submoduleConfiguration, uint16_t subslot)
 {
+    allUpdatedCallback = submoduleConfiguration.inputs.GetAllUpdatedCallback();
     for(const auto& elem : submoduleConfiguration.parameters)
     {
         auto insert = parameters.try_emplace(elem.GetIdx());
@@ -118,6 +119,8 @@ bool SubmoduleInstance::SetInput(const uint8_t* buffer, std::size_t numBytes)
         buffer+=length;
         numBytes -= length;
     }
+    if(allUpdatedCallback)
+        allUpdatedCallback();
     return true;
 }
 bool SubmoduleInstance::GetOutput(uint8_t* buffer, std::size_t* numBytes)
