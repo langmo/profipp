@@ -66,12 +66,7 @@ public:
             {
                 if(numbytes < length)
                     return false;
-                std::array<char, length> value;
-                auto ptr = value.data();
-                bool result = fromProfinet<char*, length>(buffer, numbytes, &ptr);
-                if(!result)
-                    return false;
-                setCallback(std::string(value.data(), length));
+                setCallback(std::string(reinterpret_cast<const char*>(buffer), length));
                 return true;
             };
             auto result{Create(wrapperSet, length)};
