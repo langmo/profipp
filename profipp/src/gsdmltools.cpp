@@ -299,6 +299,9 @@ inline bool CreateDOM(const Profinet& profinet, pugi::xml_document& doc)
                 ref.append_attribute("Changeable").set_value(parameter.properties.changeable? "true" : "false");
                 ref.append_attribute("ByteOffset").set_value("0");
                 ref.append_attribute("DefaultValue").set_value(parameter.properties.defaultValue.c_str());
+                // Attribute Length only necessary/allowed for strings
+                if(!parameter.properties.length.empty())
+                    ref.append_attribute("Length").set_value(parameter.properties.length.c_str());
             }
 
             auto submoduleInfo{virtualSubmoduleItem.append_child("ModuleInfo")};

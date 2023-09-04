@@ -20,12 +20,12 @@ namespace profinet
          * @brief Allowed values of the parameter. If empty, all values are allowed.
          */
         std::string allowedValues{""};
-
         /**
          * @brief Default value for the parameter. Either, allowedValues should be empty, or defaultValue should be part of.
-         * 
          */
         std::string defaultValue{"0"};
+        // set to length for strings. Keep empty for non-strings.
+        std::string length{""};
     };
 }
 #endif

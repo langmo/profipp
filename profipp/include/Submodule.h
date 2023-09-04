@@ -114,8 +114,8 @@ public:
             {
                 if(numbytes < length)
                     return false;
-                auto value = getCallback(value);
-                return toProfinet<uint8_t*, length>(buffer, numbytes, value.c_str());
+                auto value = getCallback();
+                return toProfinet<const uint8_t*, length>(buffer, numbytes, reinterpret_cast<const uint8_t*>(value.c_str()));
             };
             auto result{Create(wrapperGet, length)};
             if(result)
@@ -162,6 +162,33 @@ public:
                 ss << defaultValue;
                 retVal->properties.defaultValue = ss.str();
                 retVal->properties.dataType = gsdmlName<T>;
+            }
+            return retVal;
+        }
+        template<std::size_t length> Parameter* CreateString(
+            uint16_t parameterIdx, 
+            const std::function<void(const std::string&)>& setCallback, const std::function<std::string()>& getCallback, const std::string& defaultValue="")
+        {
+            auto wrapperSet = [setCallback](const uint8_t* buffer, std::size_t numbytes) -> bool
+            {
+                if(numbytes < length)
+                    return false;
+                setCallback(std::string(reinterpret_cast<const char*>(buffer), length));
+                return true;
+            };
+            auto wrapperGet = [getCallback](uint8_t* buffer, std::size_t numbytes) -> bool
+            {
+                if(numbytes < length)
+                    return false;
+                auto value = getCallback();
+                return toProfinet<const uint8_t*, length>(buffer, numbytes, reinterpret_cast<const uint8_t*>(value.c_str()));
+            };
+            auto retVal = Create(parameterIdx, wrapperSet, wrapperGet, length);
+            if(retVal)
+            {
+                retVal->properties.defaultValue = defaultValue;
+                retVal->properties.dataType = "VisibleString";
+                retVal->properties.length = std::to_string((int)length);
             }
             return retVal;
         }
